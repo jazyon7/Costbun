@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laporan</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="navigasi.js"></script>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <i class="fa-solid fa-house-signal"></i>
+        <div class="sidebar-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+      <nav class="sidebar-menu">
+        <a href="index.html"><i class="fa fa-th-large"></i> Dashboard</a>
+        <a href="notifikasi.html"><i class="fa-regular fa-bell"></i> notifikasi</a>
+        <a href="data_kos.html"><i class="fa fa-clipboard"></i> data kos</a>
+        <a href="data_kamar.html"><i class="fa-solid fa-door-closed"></i> data kamar</a>
+        <a href="laporan.html"><i class="fa-solid fa-file-lines"></i> laporan</a>
+        <hr>
+        <a href="profile.html"><i class="fa fa-user"></i> My Profile</a>
+        <a href="setting.html"><i class="fa-solid fa-gear"></i> Settings</a>
+        <a href="#"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</a>
+        <div class="sidebar-help">
+          <a class="active.help" href="#"><i class="fa-regular fa-circle-question"></i> Help</a>
+        </div>
+      </nav>
+    </aside>
+    <main>
+      <header class="main-header">
+        <div>
+          <h2>Laporan Kerusakan Fasilitas</h2>
+        </div>
+      </header>
+      <div class="content">
+  <div class="page-header">
+  </div>
+
+  <div class="filter-box">
+    <div class="filter-group">
+      <label>Status</label>
+      <select>
+        <option>Semua</option>
+        <option>Diproses</option>
+        <option>Selesai</option>
+      </select>
+    </div>
+
+    <button class="btn-filter">Filter</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+        <thead>
+            <tr>
+            <th>No</th>
+            <th>Pelapor</th>
+            <th>Fasilitas</th>
+            <th>Keterangan</th>
+            <th>Tanggal Lapor</th>
+            <th>Status</th>
+            <th>Aksi</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+            <td>1</td>
+            <td>Sukron</td>
+            <td>Gayung</td>
+            <td>Gayung pecah</td>
+            <td>2025-11-12</td>
+            <td><span class="status success">Selesai</span></td>
+            <td>
+                <button class="btn-detail">Detail</button>
+            </td>
+            </tr>
+
+            <tr>
+            <td>2</td>
+            <td>zen</td>
+            <td>Pintu</td>
+            <td>engsel pintu copot</td>
+            <td>2025-11-25</td>
+            <td><span class="status pending">Diproses</span></td>
+            <td>
+                <button class="btn-detail">Detail</button>
+            </td>
+            </tr>
+
+            <tr>
+            <td>3</td>
+            <td>dika</td>
+            <td>meja</td>
+            <td>meja belah dua</td>
+            <td>2025-11-30</td>
+            <td><span class="status pending">Diproses</span></td>
+            <td>
+                <button class="btn-detail">Detail</button>
+            </td>
+            </tr>
+        </tbody>
+        </table>
+    </div>
+    </div>
+    </main>
+  </div>
+</body>
+</html>
