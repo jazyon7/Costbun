@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Theme</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div style="padding: 20px;">
+    <h1>Test Dark Theme</h1>
+    <button onclick="testDarkTheme()">Apply Dark Theme</button>
+    <button onclick="testLightTheme()">Apply Light Theme</button>
+    <button onclick="checkClass()">Check Body Class</button>
+    
+    <div style="margin-top: 20px; padding: 20px; background: white; border: 1px solid #ccc;">
+      <p>This is test content</p>
+    </div>
+  </div>
+  
+  <script>
+    function testDarkTheme() {
+      console.log('Adding dark-theme class...');
+      document.body.classList.add('dark-theme');
+      console.log('Body classes:', document.body.className);
+    }
+    
+    function testLightTheme() {
+      console.log('Removing dark-theme class...');
+      document.body.classList.remove('dark-theme');
+      console.log('Body classes:', document.body.className);
+    }
+    
+    function checkClass() {
+      console.log('Current body classes:', document.body.className);
+      console.log('Has dark-theme?', document.body.classList.contains('dark-theme'));
+      alert('Body class: ' + document.body.className);
+    }
+    
+    // Check localStorage
+    console.log('Saved theme:', localStorage.getItem('app_tema'));
+  </script>
+</body>
+</html>

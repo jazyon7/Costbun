@@ -15,7 +15,10 @@ function createKamar($data) {
 }
 
 function updateKamar($id_kamar, $data) {
-    return supabase_request('PATCH', "/rest/v1/kamar?id_kamar=eq.$id_kamar", $data);
+    error_log("updateKamar() - ID: $id_kamar, Data: " . json_encode($data));
+    $result = supabase_request('PATCH', "/rest/v1/kamar?id_kamar=eq.$id_kamar", $data);
+    error_log("updateKamar() - Result: " . json_encode($result));
+    return $result;
 }
 
 function deleteKamar($id_kamar) {
@@ -70,7 +73,8 @@ function getNotifikasi($id_notif = null) {
         $response = supabase_request('GET', "/rest/v1/notifikasi?id_notif=eq.$id_notif&select=*,user(nama)");
         return !empty($response) ? $response[0] : null;
     }
-    return supabase_request('GET', '/rest/v1/notifikasi?select=*,user(nama)&order=tanggal_kirim.desc');
+    $response = supabase_request('GET', '/rest/v1/notifikasi?select=*,user(nama)&order=id_notif.desc');
+    return is_array($response) ? $response : [];
 }
 
 function createNotifikasi($data) {

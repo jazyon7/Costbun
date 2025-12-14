@@ -22,7 +22,17 @@ if (empty($response)) {
 
 $user = $response[0];
 
-if (trim($password) !== trim($user['password'])) {
+// Cek password - support plain text (old) dan bcrypt (new)
+$passwordValid = false;
+if (password_verify($password, $user['password'])) {
+    // Password di-hash dengan bcrypt
+    $passwordValid = true;
+} elseif (trim($password) === trim($user['password'])) {
+    // Password masih plain text (untuk backward compatibility)
+    $passwordValid = true;
+}
+
+if (!$passwordValid) {
     header("Location: ../login.php?error=Password salah");
     exit;
 }

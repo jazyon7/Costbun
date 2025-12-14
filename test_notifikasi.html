@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Notifikasi System - Costbun</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 32px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .test-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .test-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        
+        .test-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .test-item p {
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .test-link {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .test-link:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .badge-admin {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .badge-penghuni {
+            background: #4ecdc4;
+            color: white;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box strong {
+            color: #0066cc;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4ecdc4;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 Test Notifikasi System - Costbun Kost Management</h1>
+        
+        <div class="test-section">
+            <h2>📋 Informasi Testing</h2>
+            
+            <div class="warning-box">
+                <strong>⚠️ Catatan Penting:</strong><br>
+                Pastikan Anda sudah login dengan akun yang sesuai untuk testing masing-masing role.
+            </div>
+            
+            <div class="info-box">
+                <strong>📌 Fitur Notifikasi yang Diimplementasikan:</strong>
+                <ul class="feature-list">
+                    <li><strong>Admin</strong> dapat membuat notifikasi dan broadcast ke semua/penghuni tertentu</li>
+                    <li><strong>Penghuni</strong> hanya bisa melihat notifikasi yang ditujukan untuk mereka</li>
+                    <li>Filter notifikasi berdasarkan tipe (Pengumuman, Acara, Tagihan, Peringatan, dll)</li>
+                    <li>Tandai notifikasi sebagai sudah dibaca</li>
+                    <li>Hapus notifikasi (admin only)</li>
+                    <li>Multiple user selection untuk targeted notification</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>👤 Test Case #1: Login Sebagai Admin</h2>
+            
+            <div class="test-item">
+                <h3>1.1 Login Admin <span class="badge badge-admin">ADMIN</span></h3>
+                <p><strong>Kredensial:</strong></p>
+                <p>Username: <code>admin</code></p>
+                <p>Password: <code>admin123</code></p>
+                <a href="http://costbun.test/login.php" class="test-link" target="_blank">🔐 Login Page</a>
+            </div>
+            
+            <div class="test-item">
+                <h3>1.2 Akses Halaman Notifikasi (Admin)</h3>
+                <p><strong>Ekspektasi:</strong></p>
+                <ul class="feature-list">
+                    <li>Melihat tombol "Buat Notifikasi"</li>
+                    <li>Melihat filter tabs (Semua, Pengumuman, Acara, Tagihan, Peringatan, Maintenance, Info)</li>
+                    <li>Melihat semua notifikasi yang ada di sistem</li>
+                    <li>Bisa hapus notifikasi</li>
+                </ul>
+                <a href="http://costbun.test/index.php?page=notifikasi" class="test-link" target="_blank">📋 Halaman Notifikasi</a>
+            </div>
+            
+            <div class="test-item">
+                <h3>1.3 Buat Notifikasi Broadcast ke Semua Penghuni</h3>
+                <p><strong>Langkah:</strong></p>
+                <ol style="margin-left: 20px; color: #666;">
+                    <li>Klik tombol "Buat Notifikasi"</li>
+                    <li>Pilih Tipe: <code>🎉 Acara</code></li>
+                    <li>Judul: <code>Arisan Bulanan Mei 2024</code></li>
+                    <li>Pesan: <code>Arisan akan diadakan tanggal 15 Mei 2024 pukul 19:00 WIB di ruang bersama. Harap hadir tepat waktu!</code></li>
+                    <li>Tanggal Kirim: <code>[pilih tanggal hari ini]</code></li>
+                    <li>Kirim Ke: <code>Semua Penghuni</code></li>
+                    <li>Klik "Kirim Notifikasi"</li>
+                </ol>
+                <div class="success-box">
+                    <strong>✅ Hasil yang Diharapkan:</strong> Notifikasi berhasil dikirim ke semua penghuni (20 penghuni dummy)
+                </div>
+            </div>
+            
+            <div class="test-item">
+                <h3>1.4 Buat Notifikasi untuk Penghuni Tertentu</h3>
+                <p><strong>Langkah:</strong></p>
+                <ol style="margin-left: 20px; color: #666;">
+                    <li>Klik tombol "Buat Notifikasi"</li>
+                    <li>Pilih Tipe: <code>💰 Tagihan</code></li>
+                    <li>Judul: <code>Reminder Pembayaran Kos Bulan Mei</code></li>
+                    <li>Pesan: <code>Mohon segera lakukan pembayaran kos bulan Mei sebelum tanggal 10. Terima kasih!</code></li>
+                    <li>Kirim Ke: <code>Penghuni Tertentu</code></li>
+                    <li>Pilih 3-5 penghuni dari dropdown (gunakan Ctrl+Click untuk multiple select)</li>
+                    <li>Klik "Kirim Notifikasi"</li>
+                </ol>
+                <div class="success-box">
+                    <strong>✅ Hasil yang Diharapkan:</strong> Notifikasi hanya dikirim ke penghuni yang dipilih
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>👥 Test Case #2: Login Sebagai Penghuni</h2>
+            
+            <div class="test-item">
+                <h3>2.1 Login Penghuni <span class="badge badge-penghuni">PENGHUNI</span></h3>
+                <p><strong>Pilih salah satu kredensial penghuni:</strong></p>
+                <p>Username: <code>rizki123</code> | Password: <code>rizki123</code></p>
+                <p>Username: <code>siti_nur</code> | Password: <code>siti123</code></p>
+                <p>Username: <code>budi_san</code> | Password: <code>budi123</code></p>
+                <p style="margin-top: 10px;"><em>Atau lihat <a href="http://costbun.test/credentials_penghuni.html" target="_blank" style="color: #667eea;">daftar lengkap 20 penghuni</a></em></p>
+                <a href="http://costbun.test/login.php" class="test-link" target="_blank">🔐 Login Page</a>
+            </div>
+            
+            <div class="test-item">
+                <h3>2.2 Akses Halaman Notifikasi (Penghuni)</h3>
+                <p><strong>Ekspektasi:</strong></p>
+                <ul class="feature-list">
+                    <li>TIDAK melihat tombol "Buat Notifikasi"</li>
+                    <li>Melihat filter tabs untuk menyaring notifikasi</li>
+                    <li>Hanya melihat notifikasi yang ditujukan untuk user yang login</li>
+                    <li>Bisa tandai notifikasi sebagai sudah dibaca</li>
+                    <li>TIDAK bisa hapus notifikasi</li>
+                </ul>
+                <a href="http://costbun.test/index.php?page=notifikasi" class="test-link" target="_blank">📋 Halaman Notifikasi</a>
+            </div>
+            
+            <div class="test-item">
+                <h3>2.3 Test Filter Notifikasi</h3>
+                <p><strong>Langkah:</strong></p>
+                <ol style="margin-left: 20px; color: #666;">
+                    <li>Klik tab "Acara" - hanya notifikasi tipe acara yang muncul</li>
+                    <li>Klik tab "Tagihan" - hanya notifikasi tipe tagihan yang muncul</li>
+                    <li>Klik tab "Semua" - semua notifikasi muncul kembali</li>
+                </ol>
+                <div class="success-box">
+                    <strong>✅ Hasil yang Diharapkan:</strong> Filter bekerja dengan baik, notifikasi tersaring sesuai tipe
+                </div>
+            </div>
+            
+            <div class="test-item">
+                <h3>2.4 Test Tandai Sebagai Dibaca</h3>
+                <p><strong>Langkah:</strong></p>
+                <ol style="margin-left: 20px; color: #666;">
+                    <li>Cari notifikasi dengan badge "BARU" (warna biru)</li>
+                    <li>Klik tombol "✓ Tandai Dibaca"</li>
+                    <li>Notifikasi akan refresh otomatis</li>
+                </ol>
+                <div class="success-box">
+                    <strong>✅ Hasil yang Diharapkan:</strong> Badge "BARU" hilang, background berubah dari biru ke putih, tombol "Tandai Dibaca" hilang
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔍 Test Case #3: Edge Cases & Validasi</h2>
+            
+            <div class="test-item">
+                <h3>3.1 Form Validation</h3>
+                <p><strong>Test sebagai Admin:</strong></p>
+                <ul class="feature-list">
+                    <li>Coba submit form tanpa mengisi field required (tipe, judul, pesan)</li>
+                    <li>Browser harus menampilkan pesan validasi HTML5</li>
+                </ul>
+            </div>
+            
+            <div class="test-item">
+                <h3>3.2 Multiple User Selection</h3>
+                <p><strong>Test sebagai Admin:</strong></p>
+                <ul class="feature-list">
+                    <li>Pilih "Penghuni Tertentu"</li>
+                    <li>Gunakan Ctrl+Click (Windows) atau Cmd+Click (Mac) untuk memilih multiple users</li>
+                    <li>Pastikan bisa pilih lebih dari 1 user</li>
+                </ul>
+            </div>
+            
+            <div class="test-item">
+                <h3>3.3 Empty State</h3>
+                <p><strong>Test sebagai Penghuni yang tidak pernah dapat notifikasi:</strong></p>
+                <ul class="feature-list">
+                    <li>Login dengan penghuni yang tidak pernah mendapat notifikasi</li>
+                    <li>Harus muncul pesan "Belum ada notifikasi" dengan icon 📭</li>
+                </ul>
+            </div>
+            
+            <div class="test-item">
+                <h3>3.4 Delete Notification (Admin Only)</h3>
+                <p><strong>Test sebagai Admin:</strong></p>
+                <ol style="margin-left: 20px; color: #666;">
+                    <li>Pilih salah satu notifikasi</li>
+                    <li>Klik tombol "🗑️ Hapus"</li>
+                    <li>Konfirmasi popup</li>
+                    <li>Notifikasi terhapus dan list refresh otomatis</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Checklist Testing</h2>
+            
+            <div class="info-box">
+                <strong>✅ Centang jika test berhasil:</strong>
+                <ul style="margin-top: 10px; margin-left: 20px;">
+                    <li style="margin-bottom: 8px;">☐ Admin bisa membuat notifikasi</li>
+                    <li style="margin-bottom: 8px;">☐ Broadcast ke semua penghuni berfungsi</li>
+                    <li style="margin-bottom: 8px;">☐ Targeted notification (penghuni tertentu) berfungsi</li>
+                    <li style="margin-bottom: 8px;">☐ Penghuni hanya melihat notifikasi mereka sendiri</li>
+                    <li style="margin-bottom: 8px;">☐ Filter tipe notifikasi bekerja</li>
+                    <li style="margin-bottom: 8px;">☐ Tandai sebagai dibaca berfungsi</li>
+                    <li style="margin-bottom: 8px;">☐ Hapus notifikasi (admin) berfungsi</li>
+                    <li style="margin-bottom: 8px;">☐ Form validation berfungsi</li>
+                    <li style="margin-bottom: 8px;">☐ Multiple user selection berfungsi</li>
+                    <li style="margin-bottom: 8px;">☐ UI responsive dan tampilan bagus</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔗 Quick Links</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <a href="http://costbun.test/login.php" class="test-link" target="_blank">🔐 Login Page</a>
+                <a href="http://costbun.test/index.php?page=notifikasi" class="test-link" target="_blank">🔔 Halaman Notifikasi</a>
+                <a href="http://costbun.test/credentials_penghuni.html" class="test-link" target="_blank">👥 Daftar Penghuni</a>
+                <a href="http://costbun.test/index.php?page=dashboard" class="test-link" target="_blank">📊 Dashboard</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

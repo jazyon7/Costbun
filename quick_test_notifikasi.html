@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Test - Notifikasi</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        pre {
+            background: #2d2d30;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 400px;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Quick Test - Notifikasi API</h1>
+    
+    <div class="box">
+        <h2>Test 1: API Without Filter</h2>
+        <button onclick="testAPI('')">Test api/notifikasi_data.php</button>
+        <pre id="result1">Click button to test...</pre>
+    </div>
+    
+    <div class="box">
+        <h2>Test 2: API With User Filter (user_id=1)</h2>
+        <button onclick="testAPI('?user_id=1')">Test dengan user_id=1</button>
+        <pre id="result2">Click button to test...</pre>
+    </div>
+    
+    <div class="box">
+        <h2>Test 3: API With Type Filter (type=acara)</h2>
+        <button onclick="testAPI('?type=acara')">Test dengan type=acara</button>
+        <pre id="result3">Click button to test...</pre>
+    </div>
+    
+    <div class="box">
+        <h2>Test 4: Direct Supabase Query</h2>
+        <button onclick="window.open('test_supabase_notifikasi.php', '_blank')">Open Supabase Test</button>
+        <button onclick="window.open('debug_notifikasi.php', '_blank')">Open Debug Page</button>
+    </div>
+    
+    <div class="box">
+        <h2>Test 5: Open Actual Notifikasi Page</h2>
+        <p>Login dulu sebelum test:</p>
+        <button onclick="window.open('login.php', '_blank')">Login Page</button>
+        <button onclick="window.open('index.php?page=notifikasi', '_blank')">Notifikasi Page</button>
+    </div>
+    
+    <script>
+        function testAPI(params) {
+            const resultId = params === '' ? 'result1' : (params.includes('user_id') ? 'result2' : 'result3');
+            const resultEl = document.getElementById(resultId);
+            
+            resultEl.textContent = '⏳ Loading...';
+            
+            const url = 'api/notifikasi_data.php' + params;
+            console.log('Testing:', url);
+            
+            fetch(url)
+                .then(response => {
+                    console.log('Status:', response.status);
+                    console.log('Headers:', [...response.headers.entries()]);
+                    
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    
+                    return response.text();
+                })
+                .then(text => {
+                    console.log('Raw response:', text);
+                    
+                    try {
+                        const data = JSON.parse(text);
+                        console.log('Parsed data:', data);
+                        
+                        let output = '✅ SUCCESS!\n\n';
+                        output += 'Total notifikasi: ' + data.length + '\n\n';
+                        
+                        if (data.length > 0) {
+                            output += 'Sample data (first 2):\n\n';
+                            output += JSON.stringify(data.slice(0, 2), null, 2);
+                        } else {
+                            output += 'Data kosong (empty array)';
+                        }
+                        
+                        resultEl.textContent = output;
+                        resultEl.style.color = '#28a745';
+                    } catch (e) {
+                        resultEl.textContent = '❌ JSON Parse Error!\n\n' + text;
+                        resultEl.style.color = '#dc3545';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    resultEl.textContent = '❌ ERROR: ' + error.message;
+                    resultEl.style.color = '#dc3545';
+                });
+        }
+        
+        // Auto test on load
+        window.addEventListener('load', function() {
+            console.log('Page loaded, running auto test...');
+            testAPI('');
+        });
+    </script>
+</body>
+</html>

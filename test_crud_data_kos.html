@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test CRUD - Data Kos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .test-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-item {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .test-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .test-steps {
+            list-style: none;
+            padding-left: 0;
+        }
+        .test-steps li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-steps li:last-child {
+            border-bottom: none;
+        }
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .status-success {
+            background: #4CAF50;
+            color: white;
+        }
+        .status-warning {
+            background: #ff9800;
+            color: white;
+        }
+        .status-ready {
+            background: #2196F3;
+            color: white;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .alert-info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #2196F3;
+        }
+        .alert-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4CAF50;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success {
+            background: #4CAF50;
+        }
+        .btn-success:hover {
+            background: #45a049;
+        }
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .feature-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .feature-status {
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test CRUD - Data Kos</h1>
+        <p class="subtitle">Panduan testing lengkap untuk fitur Create, Read, Update, Delete</p>
+
+        <?php
+        session_start();
+        if (!isset($_SESSION['id_user'])) {
+            echo '<div class="alert alert-info">
+                ℹ️ Anda belum login. Silakan <a href="login.php">login sebagai admin</a> untuk test CRUD.
+            </div>';
+        } else {
+            $role = $_SESSION['role'] ?? 'unknown';
+            if ($role === 'admin') {
+                echo '<div class="alert alert-success">
+                    ✅ Login sebagai: <strong>' . htmlspecialchars($_SESSION['nama']) . '</strong> (Admin) - Semua fitur CRUD dapat digunakan
+                </div>';
+            } else {
+                echo '<div class="alert alert-info">
+                    ⚠️ Login sebagai: <strong>' . htmlspecialchars($_SESSION['nama']) . '</strong> (Role: ' . $role . ') - Fitur terbatas, login sebagai admin untuk full access
+                </div>';
+            }
+        }
+        ?>
+
+        <!-- CRUD Status -->
+        <div class="test-section">
+            <h2>📊 Status Fitur CRUD</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <div class="feature-title">CREATE</div>
+                    <div class="feature-status">
+                        <span class="status-badge status-success">Ready</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <div class="feature-title">READ</div>
+                    <div class="feature-status">
+                        <span class="status-badge status-success">Ready</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <div class="feature-title">UPDATE</div>
+                    <div class="feature-status">
+                        <span class="status-badge status-success">Ready</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <div class="feature-title">DELETE</div>
+                    <div class="feature-status">
+                        <span class="status-badge status-success">Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test CREATE -->
+        <div class="test-section">
+            <h2>1️⃣ Test CREATE (Tambah User)</h2>
+            <div class="test-item">
+                <h3>📝 Langkah Testing:</h3>
+                <ul class="test-steps">
+                    <li>
+                        <span class="step-number">1</span>
+                        Buka halaman Data Kos
+                    </li>
+                    <li>
+                        <span class="step-number">2</span>
+                        Klik tombol "Tambah User" (hanya muncul untuk admin)
+                    </li>
+                    <li>
+                        <span class="step-number">3</span>
+                        Isi form dengan data lengkap
+                    </li>
+                    <li>
+                        <span class="step-number">4</span>
+                        Pilih role: Admin atau Penghuni Kos
+                    </li>
+                    <li>
+                        <span class="step-number">5</span>
+                        Klik "Simpan User"
+                    </li>
+                    <li>
+                        <span class="step-number">6</span>
+                        Verifikasi user baru muncul di tabel
+                    </li>
+                </ul>
+                <div class="code-block">
+✅ Expected Result:
+- Modal tertutup
+- Redirect ke data kos dengan pesan sukses
+- User baru muncul di tabel
+- Password ter-hash di database
+                </div>
+            </div>
+        </div>
+
+        <!-- Test READ -->
+        <div class="test-section">
+            <h2>2️⃣ Test READ (Lihat Data)</h2>
+            <div class="test-item">
+                <h3>📝 Langkah Testing:</h3>
+                <ul class="test-steps">
+                    <li>
+                        <span class="step-number">1</span>
+                        Buka halaman Data Kos
+                    </li>
+                    <li>
+                        <span class="step-number">2</span>
+                        Verifikasi tabel menampilkan semua user
+                    </li>
+                    <li>
+                        <span class="step-number">3</span>
+                        Cek kolom: No, Nama, No Kamar, Kontak, Email, Status, Aksi
+                    </li>
+                    <li>
+                        <span class="step-number">4</span>
+                        Verifikasi badge status (Admin/Penghuni/User)
+                    </li>
+                    <li>
+                        <span class="step-number">5</span>
+                        Klik tombol "Detail" untuk lihat profil user
+                    </li>
+                </ul>
+                <div class="code-block">
+✅ Expected Result:
+- Data tampil lengkap dari Supabase
+- Status badge sesuai role
+- Tombol aksi sesuai permission
+- No data user ter-sort
+                </div>
+            </div>
+        </div>
+
+        <!-- Test UPDATE -->
+        <div class="test-section">
+            <h2>3️⃣ Test UPDATE (Edit User)</h2>
+            <div class="test-item">
+                <h3>📝 Langkah Testing:</h3>
+                <ul class="test-steps">
+                    <li>
+                        <span class="step-number">1</span>
+                        Buka halaman Data Kos
+                    </li>
+                    <li>
+                        <span class="step-number">2</span>
+                        Klik tombol "Edit" (ikon pensil) pada salah satu user
+                    </li>
+                    <li>
+                        <span class="step-number">3</span>
+                        Modal edit muncul dengan data user ter-isi
+                    </li>
+                    <li>
+                        <span class="step-number">4</span>
+                        Ubah beberapa field (nama, email, role, dll)
+                    </li>
+                    <li>
+                        <span class="step-number">5</span>
+                        Password: kosongkan jika tidak ingin ubah
+                    </li>
+                    <li>
+                        <span class="step-number">6</span>
+                        Klik "Update User"
+                    </li>
+                    <li>
+                        <span class="step-number">7</span>
+                        Verifikasi perubahan tersimpan
+                    </li>
+                </ul>
+                <div class="code-block">
+✅ Expected Result:
+- Modal tertutup
+- Redirect dengan pesan sukses
+- Data ter-update di tabel
+- Password lama tetap jika tidak diubah
+- Password baru ter-hash jika diisi
+                </div>
+            </div>
+        </div>
+
+        <!-- Test DELETE -->
+        <div class="test-section">
+            <h2>4️⃣ Test DELETE (Hapus User)</h2>
+            <div class="test-item">
+                <h3>📝 Langkah Testing:</h3>
+                <ul class="test-steps">
+                    <li>
+                        <span class="step-number">1</span>
+                        Buka halaman Data Kos
+                    </li>
+                    <li>
+                        <span class="step-number">2</span>
+                        Klik tombol "Delete" (ikon sampah) pada user non-admin
+                    </li>
+                    <li>
+                        <span class="step-number">3</span>
+                        Dialog konfirmasi muncul
+                    </li>
+                    <li>
+                        <span class="step-number">4</span>
+                        Klik "OK" untuk konfirmasi hapus
+                    </li>
+                    <li>
+                        <span class="step-number">5</span>
+                        Tombol menampilkan loading (spinner)
+                    </li>
+                    <li>
+                        <span class="step-number">6</span>
+                        Verifikasi user terhapus dari tabel
+                    </li>
+                </ul>
+                <div class="code-block">
+✅ Expected Result:
+- Konfirmasi dialog muncul
+- Loading state saat proses
+- Redirect dengan pesan sukses
+- User hilang dari tabel
+- Admin tidak bisa dihapus
+                </div>
+            </div>
+        </div>
+
+        <!-- API Endpoints -->
+        <div class="test-section">
+            <h2>🌐 API Endpoints</h2>
+            <div class="test-item">
+                <div class="code-block">
+POST /api/user.php?action=create
+- Tambah user baru
+- Body: nama, email, username, password, role, dll
+- Response: JSON {success, message}
+
+GET /api/user.php?action=get&id={id}
+- Ambil data user by ID
+- Response: JSON object user
+
+GET /api/user.php?action=get
+- Ambil semua user
+- Response: JSON array users
+
+POST /api/user.php?action=update&id={id}
+- Update user by ID
+- Body: field yang ingin diupdate
+- Password optional (skip jika kosong)
+- Response: JSON {success, message}
+
+GET /api/user.php?action=delete&id={id}
+- Hapus user by ID
+- Response: Redirect ke data kos
+                </div>
+            </div>
+        </div>
+
+        <!-- Security & Permissions -->
+        <div class="test-section">
+            <h2>🔐 Security & Permissions</h2>
+            <div class="test-item">
+                <ul class="test-steps">
+                    <li>
+                        <span class="step-number">✓</span>
+                        <strong>Admin:</strong> Full access CRUD
+                    </li>
+                    <li>
+                        <span class="step-number">✓</span>
+                        <strong>Penghuni:</strong> Read only, tombol disabled
+                    </li>
+                    <li>
+                        <span class="step-number">✓</span>
+                        <strong>Password:</strong> Hash bcrypt, min 6 karakter
+                    </li>
+                    <li>
+                        <span class="step-number">✓</span>
+                        <strong>Validation:</strong> Client & server side
+                    </li>
+                    <li>
+                        <span class="step-number">✓</span>
+                        <strong>Admin Protection:</strong> Tidak bisa dihapus
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="index.php?page=data_kos" class="btn btn-success">
+                🚀 Mulai Test CRUD
+            </a>
+            <a href="credentials_penghuni.html" class="btn">
+                🔑 Lihat Credentials
+            </a>
+            <a href="test_user_management.php" class="btn">
+                📊 Test Management
+            </a>
+        </div>
+    </div>
+</body>
+</html>
