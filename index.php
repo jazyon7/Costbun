@@ -35,10 +35,15 @@ if(!isset($_SESSION['id_user'])){
 
       <nav class="sidebar-menu">
         <a href="index.php?page=dashboard"><i class="fa fa-th-large"></i> Dashboard</a>
-        <a href="index.php?page=notifikasi"><i class="fa-regular fa-bell"></i> notifikasi</a>
-        <a href="index.php?page=data_kos"><i class="fa fa-clipboard"></i> data kos</a>
-        <a href="index.php?page=data_kamar"><i class="fa-solid fa-door-closed"></i> data kamar</a>
-        <a href="index.php?page=laporan"><i class="fa-solid fa-file-lines"></i> laporan</a>
+        <a href="index.php?page=notifikasi"><i class="fa-regular fa-bell"></i> Notifikasi</a>
+        <a href="index.php?page=data_kos"><i class="fa fa-clipboard"></i> Data Kos</a>
+        <a href="index.php?page=data_kamar"><i class="fa-solid fa-door-closed"></i> Data Kamar</a>
+        <a href="index.php?page=laporan"><i class="fa-solid fa-file-lines"></i> Laporan</a>
+        <hr>
+        <a href="index.php?page=tools"><i class="fa-solid fa-screwdriver-wrench"></i> Tools</a>
+        <a href="index.php?page=test_koneksi"><i class="fa-solid fa-plug"></i> Test Koneksi</a>
+        <a href="index.php?page=tambah_data"><i class="fa-solid fa-plus-circle"></i> Tambah Data</a>
+        <a href="index.php?page=demo_api"><i class="fa-solid fa-flask"></i> Demo API</a>
         <hr>
         <a href="index.php?page=profile"><i class="fa fa-user"></i> My Profile</a>
         <a href="index.php?page=setting"><i class="fa-solid fa-gear"></i> Settings</a>
@@ -94,6 +99,22 @@ if(!isset($_SESSION['id_user'])){
 
                   case 'laporan':
                        include "pages/laporan.php";
+                      break;
+
+                  case 'tools':
+                      include "pages/tools.php";
+                      break;
+
+                  case 'test_koneksi':
+                      include "pages/test_koneksi.php";
+                      break;
+
+                  case 'tambah_data':
+                      include "pages/tambah_data.php";
+                      break;
+
+                  case 'demo_api':
+                      include "pages/demo_api.php";
                       break;
 
                   case 'profile':

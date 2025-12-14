@@ -21,14 +21,14 @@
         <section class="filter-box">
           <div class="filter-group">
             <label>Status</label>
-            <select>
-              <option>Semua</option>
-              <option>Diproses</option>
-              <option>Selesai</option>
+            <select id="filterStatus">
+              <option value="">Semua</option>
+              <option value="diproses">Diproses</option>
+              <option value="selesai">Selesai</option>
             </select>
           </div>
 
-          <button class="btn-filter">Filter</button>
+          <button class="btn-filter" onclick="filterLaporan()">Filter</button>
         </section>
 
         <!-- ✅ Diubah menjadi section -->
@@ -38,8 +38,8 @@
               <tr>
                 <th>No</th>
                 <th>Pelapor</th>
-                <th>Fasilitas</th>
-                <th>Keterangan</th>
+                <th>Judul</th>
+                <th>Deskripsi</th>
                 <th>Tanggal Lapor</th>
                 <th>Status</th>
                 <th>Aksi</th>
@@ -47,43 +47,67 @@
             </thead>
 
             <tbody>
-              <tr>
-                <td>1</td>
-                <td>Sukron</td>
-                <td>Gayung</td>
-                <td>Gayung pecah</td>
-                <td>2025-11-12</td>
-                <td><span class="status success">Selesai</span></td>
-                <td>
-                  <button class="btn-detail">Detail</button>
-                </td>
-              </tr>
+              <?php
+              require_once __DIR__ . '/../config/supabase_helper.php';
 
-              <tr>
-                <td>2</td>
-                <td>zen</td>
-                <td>Pintu</td>
-                <td>engsel pintu copot</td>
-                <td>2025-11-25</td>
-                <td><span class="status pending">Diproses</span></td>
-                <td>
-                  <button class="btn-detail">Detail</button>
-                </td>
-              </tr>
+              $laporanList = getLaporan();
+              $no = 1;
 
-              <tr>
-                <td>3</td>
-                <td>dika</td>
-                <td>meja</td>
-                <td>meja belah dua</td>
-                <td>2025-11-30</td>
-                <td><span class="status pending">Diproses</span></td>
+              if (!empty($laporanList)) {
+                  foreach($laporanList as $row) {
+                      $statusClass = strtolower($row['status_laporan']) == 'selesai' ? 'success' : 'pending';
+                      $pelapor = isset($row['user']['nama']) ? $row['user']['nama'] : 'Unknown';
+                      $tanggal = date('Y-m-d', strtotime($row['created_at']));
+              ?>
+              <tr data-status="<?= strtolower($row['status_laporan']); ?>">
+                <td><?= $no++; ?></td>
+                <td><?= htmlspecialchars($pelapor); ?></td>
+                <td><?= htmlspecialchars($row['judul_laporan']); ?></td>
+                <td><?= htmlspecialchars($row['deskripsi']); ?></td>
+                <td><?= $tanggal; ?></td>
+                <td><span class="status <?= $statusClass; ?>"><?= htmlspecialchars($row['status_laporan']); ?></span></td>
                 <td>
-                  <button class="btn-detail">Detail</button>
+                  <button class="btn-detail" onclick="detailLaporan(<?= $row['id_laporan']; ?>)">Detail</button>
+                  <button class="btn-edit" onclick="updateStatus(<?= $row['id_laporan']; ?>, '<?= $row['status_laporan']; ?>')">Ubah Status</button>
                 </td>
               </tr>
+              <?php 
+                  }
+              } else {
+              ?>
+              <tr>
+                <td colspan="7" style="text-align: center;">Tidak ada data laporan</td>
+              </tr>
+              <?php } ?>
             </tbody>
           </table>
         </section>
 
       </section>
+
+      <script>
+      function filterLaporan() {
+          const status = document.getElementById('filterStatus').value.toLowerCase();
+          const rows = document.querySelectorAll('tbody tr[data-status]');
+          
+          rows.forEach(row => {
+              if (status === '' || row.getAttribute('data-status') === status) {
+                  row.style.display = '';
+              } else {
+                  row.style.display = 'none';
+              }
+          });
+      }
+
+      function detailLaporan(id) {
+          alert('Detail laporan ID: ' + id);
+          // window.location.href = 'detail_laporan.php?id=' + id;
+      }
+
+      function updateStatus(id, currentStatus) {
+          const newStatus = currentStatus.toLowerCase() === 'diproses' ? 'selesai' : 'diproses';
+          if (confirm('Ubah status menjadi ' + newStatus + '?')) {
+              window.location.href = 'api/laporan.php?action=update_status&id=' + id + '&status=' + newStatus;
+          }
+      }
+      </script>

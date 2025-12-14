@@ -1,15 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pengaturan</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="navigasi.js"></script>
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
-</head>
+<?php
+require_once __DIR__ . '/../config/supabase_helper.php';
+
+$id_user = $_SESSION['id_user'] ?? 1;
+$userData = getUser($id_user);
+if (!$userData) {
+    $userData = ['nama' => '', 'email' => '', 'username' => ''];
+}
+?>
     <main>
       <header class="main-header">
         <div>
@@ -29,20 +26,43 @@
 
             <div class="form-group">
               <label>Nama Admin</label>
-              <input type="text" placeholder="Nama lengkap">
+              <input type="text" id="nama" value="<?= htmlspecialchars($userData['nama']); ?>" placeholder="Nama lengkap">
             </div>
 
             <div class="form-group">
               <label>Email</label>
-              <input type="email" placeholder="Email admin">
+              <input type="email" id="email" value="<?= htmlspecialchars($userData['email']); ?>" placeholder="Email admin">
             </div>
 
             <div class="form-group">
               <label>Password Baru</label>
-              <input type="password" placeholder="Kosongkan jika tidak mengganti">
+              <input type="password" id="password" placeholder="Kosongkan jika tidak mengganti">
             </div>
 
-            <button class="btn-save">Simpan Perubahan</button>
+            <button class="btn-save" onclick="saveSettings()">Simpan Perubahan</button>
+            
+            <script>
+            function saveSettings() {
+                const nama = document.getElementById('nama').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                let updateData = { nama, email };
+                if (password) updateData.password = password;
+                
+                fetch('api/user.php?action=update&id=<?= $id_user ?>', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: new URLSearchParams(updateData)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || 'Data berhasil diupdate!');
+                    location.reload();
+                })
+                .catch(err => alert('Error: ' + err));
+            }
+            </script>
           </section>
 
           <!-- ✅ Diubah menjadi section -->

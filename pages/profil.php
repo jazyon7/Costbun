@@ -1,11 +1,14 @@
 <?php
-include "koneksi.php";
+require_once __DIR__ . '/../config/supabase_helper.php';
 
-// ✅ Misal id_user sudah ada di session
-$id_user = $_SESSION['id_user'] ?? 1; // fallback ke ID 1 kalau belum login
+// Ambil id_user dari session
+$id_user = $_SESSION['id_user'] ?? 1;
 
-$query = mysqli_query($conn, "SELECT * FROM user WHERE id_user='$id_user'");
-$data = mysqli_fetch_assoc($query);
+// Get data user dari Supabase
+$data = getUser($id_user);
+if (!$data) {
+    $data = ['nama' => '', 'email' => '', 'nomor' => '', 'username' => '', 'role' => 'user'];
+}
 ?>
 
 <section class="profile-section">

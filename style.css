@@ -822,3 +822,7 @@ input:focus + .slider {
 .card-yellow {
   background: linear-gradient(135deg, #eecb4b 0%, #cd9c15 100%);
 }
+
+.card-green {
+  background: linear-gradient(135deg, #81c784 0%, #4CAF50 100%);
+}
