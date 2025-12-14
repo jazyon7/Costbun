@@ -120,6 +120,10 @@ if(!isset($_SESSION['id_user'])){
                       include "pages/bukti_pembayaran.php";
                       break;
 
+                  case 'laporan':
+                      include "pages/laporan.php";
+                      break;
+
                   case 'tools':
                       include "pages/tools.php";
                       break;
