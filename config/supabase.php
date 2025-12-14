@@ -1,0 +1,3 @@
+<?php
+define('SUPABASE_URL', 'https://plngxhsvzrztfqnivztt.supabase.co');
+define('SUPABASE_API_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsbmd4aHN2enJ6dGZxbml2enR0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDg2MTg1OCwiZXhwIjoyMDgwNDM3ODU4fQ.khpmfDbyoXIO_Nz4n7xj-SrRRURKuz_V1CwK9HsPPo4');

@@ -120,7 +120,7 @@
         <p class="error-msg"><?= $_GET['error']; ?></p>
     <?php } ?>
 
-    <form action="login_process.php" method="POST">
+    <form action="auth/login_process.php" method="POST">
         <label>Username</label>
         <input type="text" name="username" required>
 
