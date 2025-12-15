@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Setup Foreign Key CASCADE - Visual Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .sql-box {
+            background: #2d3748;
+            color: #f7fafc;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #c3e6cb;
+            margin: 15px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ffeaa7;
+            margin: 15px 0;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+            margin: 15px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 5px 10px 0;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background: #5568d3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .checklist li:before {
+            content: "☐ ";
+            font-size: 18px;
+            margin-right: 10px;
+            color: #667eea;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .table th, .table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        .table th {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔧 Setup Foreign Key ON DELETE CASCADE</h1>
+    
+    <div class="error">
+        <strong>⚠️ MASALAH SAAT INI:</strong><br>
+        Tidak bisa menghapus user karena foreign key constraint error:<br>
+        <code>Key (id_user)=(XX) is still referenced from table tagihan</code>
+    </div>
+
+    <div class="success">
+        <strong>✅ SOLUSI:</strong><br>
+        Set foreign key constraint dengan ON DELETE CASCADE agar database otomatis menghapus data terkait saat user dihapus.
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="step">
+        <h3>📍 Step 1: Buka Supabase Dashboard</h3>
+        <ol>
+            <li>Buka browser dan akses: <a href="https://supabase.com/dashboard" target="_blank">https://supabase.com/dashboard</a></li>
+            <li>Login dengan akun Anda</li>
+            <li>Pilih project: <strong>plngxhsvzrztfqnivztt</strong></li>
+        </ol>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step">
+        <h3>📝 Step 2: Buka SQL Editor</h3>
+        <ol>
+            <li>Di sidebar kiri, cari dan klik <strong>"SQL Editor"</strong></li>
+            <li>Klik tombol <strong>"New Query"</strong> (pojok kanan atas)</li>
+            <li>Akan muncul editor SQL kosong</li>
+        </ol>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step">
+        <h3>📋 Step 3: Copy SQL Script</h3>
+        <p>Buka file: <code>sql/fix_foreign_key_cascade.sql</code> di project Anda, atau copy dari sini:</p>
+        
+        <div class="sql-box">-- Drop existing foreign key constraints
+ALTER TABLE notifikasi DROP CONSTRAINT IF EXISTS notifikasi_id_user_fkey;
+ALTER TABLE tagihan DROP CONSTRAINT IF EXISTS tagihan_id_user_fkey;
+ALTER TABLE laporan DROP CONSTRAINT IF EXISTS laporan_id_user_fkey;
+ALTER TABLE kamar DROP CONSTRAINT IF EXISTS kamar_id_user_fkey;
+
+-- Recreate with ON DELETE CASCADE
+ALTER TABLE notifikasi ADD CONSTRAINT notifikasi_id_user_fkey 
+FOREIGN KEY (id_user) REFERENCES "user"(id_user) ON DELETE CASCADE;
+
+ALTER TABLE tagihan ADD CONSTRAINT tagihan_id_user_fkey 
+FOREIGN KEY (id_user) REFERENCES "user"(id_user) ON DELETE CASCADE;
+
+ALTER TABLE laporan ADD CONSTRAINT laporan_id_user_fkey 
+FOREIGN KEY (id_user) REFERENCES "user"(id_user) ON DELETE CASCADE;
+
+ALTER TABLE kamar ADD CONSTRAINT kamar_id_user_fkey 
+FOREIGN KEY (id_user) REFERENCES "user"(id_user) ON DELETE SET NULL;
+
+-- Verification
+SELECT tc.table_name, kcu.column_name, rc.delete_rule
+FROM information_schema.table_constraints AS tc
+JOIN information_schema.key_column_usage AS kcu
+    ON tc.constraint_name = kcu.constraint_name
+JOIN information_schema.referential_constraints AS rc
+    ON rc.constraint_name = tc.constraint_name
+WHERE tc.constraint_type = 'FOREIGN KEY'
+    AND kcu.table_name IN ('notifikasi', 'tagihan', 'laporan', 'kamar')
+    AND kcu.column_name = 'id_user';
+        </div>
+        
+        <button onclick="copySQL()" class="btn">📋 Copy SQL Script</button>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step">
+        <h3>▶️ Step 4: Execute SQL</h3>
+        <ol>
+            <li>Paste script SQL ke editor</li>
+            <li>Klik tombol <strong>"Run"</strong> atau tekan <code>Ctrl+Enter</code></li>
+            <li>Tunggu hingga proses selesai (biasanya 1-2 detik)</li>
+        </ol>
+        
+        <div class="success">
+            <strong>✅ SUCCESS Response:</strong><br>
+            Akan muncul tabel hasil verification dengan kolom:
+            <ul style="margin: 10px 0;">
+                <li>table_name</li>
+                <li>column_name</li>
+                <li>delete_rule (harus: CASCADE atau SET NULL)</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step">
+        <h3>✅ Step 5: Verifikasi Hasil</h3>
+        <p>Pastikan hasil query menunjukkan delete_rule yang benar:</p>
+        
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>table_name</th>
+                    <th>column_name</th>
+                    <th>delete_rule</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>notifikasi</td>
+                    <td>id_user</td>
+                    <td><strong>CASCADE</strong></td>
+                    <td>✅ Notifikasi ikut terhapus</td>
+                </tr>
+                <tr>
+                    <td>tagihan</td>
+                    <td>id_user</td>
+                    <td><strong>CASCADE</strong></td>
+                    <td>✅ Tagihan ikut terhapus</td>
+                </tr>
+                <tr>
+                    <td>laporan</td>
+                    <td>id_user</td>
+                    <td><strong>CASCADE</strong></td>
+                    <td>✅ Laporan ikut terhapus</td>
+                </tr>
+                <tr>
+                    <td>kamar</td>
+                    <td>id_user</td>
+                    <td><strong>SET NULL</strong></td>
+                    <td>✅ Kamar jadi kosong (NULL)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="step">
+        <h3>🧪 Step 6: Test Delete User</h3>
+        <p>Sekarang coba test delete user:</p>
+        
+        <h4>Option 1: Via Supabase Dashboard</h4>
+        <ol>
+            <li>Buka Table Editor → table <code>user</code></li>
+            <li>Pilih user yang ingin dihapus (bukan admin)</li>
+            <li>Klik tombol <strong>Delete</strong></li>
+            <li>Konfirmasi</li>
+        </ol>
+        
+        <h4>Option 2: Via Web Interface</h4>
+        <ol>
+            <li>Buka: <a href="http://costbun.test/index.php?page=data_kos" target="_blank">http://costbun.test/index.php?page=data_kos</a></li>
+            <li>Login sebagai admin</li>
+            <li>Klik tombol <strong>Hapus</strong> pada user</li>
+        </ol>
+        
+        <div class="success">
+            <strong>✅ EXPECTED RESULT:</strong>
+            <ul>
+                <li>User berhasil terhapus</li>
+                <li>Semua notifikasi user otomatis terhapus</li>
+                <li>Semua tagihan user otomatis terhapus</li>
+                <li>Semua laporan user otomatis terhapus</li>
+                <li>Kamar user menjadi kosong (id_user = NULL)</li>
+                <li>Foto KTP terhapus dari Supabase Storage (jika via web)</li>
+            </ul>
+        </div>
+    </div>
+
+    <hr style="margin: 30px 0;">
+
+    <h2>📋 Checklist Final</h2>
+    <ul class="checklist">
+        <li>Buka Supabase Dashboard</li>
+        <li>Masuk ke SQL Editor</li>
+        <li>Copy-paste SQL script</li>
+        <li>Run SQL script</li>
+        <li>Verifikasi delete_rule = CASCADE/SET NULL</li>
+        <li>Test delete user dari Dashboard</li>
+        <li>Test delete user dari Web</li>
+        <li>Verifikasi data terkait ikut terhapus</li>
+    </ul>
+
+    <div class="warning">
+        <strong>⚠️ PENTING:</strong><br>
+        Backup data penting sebelum test delete! Data yang terhapus tidak bisa dikembalikan.
+    </div>
+
+    <hr style="margin: 30px 0;">
+
+    <h2>🔗 Quick Links</h2>
+    <a href="https://supabase.com/dashboard" target="_blank" class="btn">🌐 Supabase Dashboard</a>
+    <a href="http://costbun.test/index.php?page=data_kos" target="_blank" class="btn">🏠 Data Kos</a>
+    <a href="http://costbun.test/test_crud_data_kos.php" target="_blank" class="btn btn-success">🧪 Test Tool</a>
+
+</div>
+
+<script>
+function copySQL() {
+    const sqlText = `-- Drop existing foreign key constraints
+ALTER TABLE notifikasi DROP CONSTRAINT IF EXISTS notifikasi_id_user_fkey;
+ALTER TABLE tagihan DROP CONSTRAINT IF EXISTS tagihan_id_user_fkey;
+ALTER TABLE laporan DROP CONSTRAINT IF EXISTS laporan_id_user_fkey;
+ALTER TABLE kamar DROP CONSTRAINT IF EXISTS kamar_id_user_fkey;
+
+-- Recreate with ON DELETE CASCADE
+ALTER TABLE notifikasi ADD CONSTRAINT notifikasi_id_user_fkey 
+FOREIGN KEY (id_user) REFERENCES "user"(id_user) ON DELETE CASCADE;
+
+ALTER TABLE tagihan ADD CONSTRAINT tagihan_id_user_fkey 
+FOREIGN KEY (id_user) REFERENCES "user"(id_user) ON DELETE CASCADE;
+
+ALTER TABLE laporan ADD CONSTRAINT laporan_id_user_fkey 
+FOREIGN KEY (id_user) REFERENCES "user"(id_user) ON DELETE CASCADE;
+
+ALTER TABLE kamar ADD CONSTRAINT kamar_id_user_fkey 
+FOREIGN KEY (id_user) REFERENCES "user"(id_user) ON DELETE SET NULL;
+
+-- Verification
+SELECT tc.table_name, kcu.column_name, rc.delete_rule
+FROM information_schema.table_constraints AS tc
+JOIN information_schema.key_column_usage AS kcu
+    ON tc.constraint_name = kcu.constraint_name
+JOIN information_schema.referential_constraints AS rc
+    ON rc.constraint_name = tc.constraint_name
+WHERE tc.constraint_type = 'FOREIGN KEY'
+    AND kcu.table_name IN ('notifikasi', 'tagihan', 'laporan', 'kamar')
+    AND kcu.column_name = 'id_user';`;
+    
+    navigator.clipboard.writeText(sqlText).then(() => {
+        alert('✅ SQL Script berhasil di-copy! Paste ke Supabase SQL Editor.');
+    }, () => {
+        alert('❌ Gagal copy. Copy manual dari file sql/fix_foreign_key_cascade.sql');
+    });
+}
+</script>
+
+</body>
+</html>

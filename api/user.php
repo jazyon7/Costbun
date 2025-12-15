@@ -1,5 +1,8 @@
 <?php
 require_once __DIR__ . '/../config/supabase_helper.php';
+session_start();
+
+header('Content-Type: application/json');
 
 $action = $_GET['action'] ?? '';
 
@@ -208,26 +211,64 @@ switch ($action) {
     case 'delete':
         $id = $_GET['id'] ?? null;
         
-        if ($id) {
-            // Get user data untuk mendapatkan id_kamar
-            $user = getUser($id);
-            $id_kamar = $user['id_kamar'] ?? null;
-            
-            // Delete user
-            $result = deleteUser($id);
-            
-            // Sync: Kosongkan kamar jika user punya kamar
-            if ($id_kamar) {
-                updateKamar($id_kamar, [
-                    'id_user' => null,
-                    'status' => 'kosong'
-                ]);
-            }
-            
-            header("Location: ../index.php?page=data_kos&msg=Penyewa berhasil dihapus");
-        } else {
-            header("Location: ../index.php?page=data_kos&error=ID tidak valid");
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID tidak valid']);
+            exit;
         }
+        
+        // Get user data untuk mendapatkan id_kamar dan foto_url
+        $user = getUser($id);
+        
+        if (!$user) {
+            echo json_encode(['success' => false, 'message' => 'User tidak ditemukan']);
+            exit;
+        }
+        
+        $id_kamar = $user['id_kamar'] ?? null;
+        $foto_url = $user['foto_url'] ?? '';
+        
+        error_log("Deleting user ID: $id, Foto: $foto_url, Kamar: $id_kamar");
+        
+        // STEP 1: Delete all related notifikasi (FOREIGN KEY CONSTRAINT)
+        $deleteNotifResult = deleteNotifikasiByUser($id);
+        error_log("Delete notifikasi for user $id: " . json_encode($deleteNotifResult));
+        
+        // STEP 2: Delete all related tagihan (FOREIGN KEY CONSTRAINT)
+        $deleteTagihanResult = deleteTagihanByUser($id);
+        error_log("Delete tagihan for user $id: " . json_encode($deleteTagihanResult));
+        
+        // STEP 3: Delete all related laporan (FOREIGN KEY CONSTRAINT)
+        $deleteLaporanResult = deleteLaporanByUser($id);
+        error_log("Delete laporan for user $id: " . json_encode($deleteLaporanResult));
+        
+        // STEP 4: Delete foto from Supabase Storage if exists
+        if ($foto_url && strpos($foto_url, 'supabase.co') !== false) {
+            preg_match('/uploads\/data_diri\/(.+)$/', $foto_url, $matches);
+            if (isset($matches[0])) {
+                $deleteResult = deleteFromSupabaseStorage('uploads', $matches[0]);
+                error_log("Delete foto from storage: " . ($deleteResult ? 'Success' : 'Failed'));
+            }
+        }
+        
+        // STEP 5: Delete user from database
+        $result = deleteUser($id);
+        
+        if (isset($result['error'])) {
+            error_log("Delete user failed: " . json_encode($result));
+            echo json_encode(['success' => false, 'message' => 'Gagal menghapus user: ' . ($result['message'] ?? 'Unknown error')]);
+            exit;
+        }
+        
+        // STEP 6: Sync - Kosongkan kamar jika user punya kamar
+        if ($id_kamar) {
+            $kamarUpdate = updateKamar($id_kamar, [
+                'id_user' => null,
+                'status' => 'kosong'
+            ]);
+            error_log("Update kamar after delete: " . json_encode($kamarUpdate));
+        }
+        
+        echo json_encode(['success' => true, 'message' => 'User berhasil dihapus beserta semua data terkait']);
         break;
     
     case 'update_session':
@@ -252,10 +293,18 @@ switch ($action) {
         
         if ($id) {
             $result = getUser($id);
-            echo json_encode($result);
+            if ($result) {
+                echo json_encode(['success' => true, 'data' => $result]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'User tidak ditemukan']);
+            }
         } else {
             $result = getUser();
-            echo json_encode($result);
+            if (is_array($result)) {
+                echo json_encode(['success' => true, 'data' => $result]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Gagal mengambil data']);
+            }
         }
         break;
     

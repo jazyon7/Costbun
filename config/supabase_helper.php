@@ -105,6 +105,10 @@ function deleteLaporan($id_laporan) {
     return supabase_request('DELETE', "/rest/v1/laporan?id_laporan=eq.$id_laporan");
 }
 
+function deleteLaporanByUser($id_user) {
+    return supabase_request('DELETE', "/rest/v1/laporan?id_user=eq.$id_user");
+}
+
 // ==================== NOTIFIKASI ====================
 function getNotifikasi($id_notif = null) {
     if ($id_notif) {
@@ -127,6 +131,10 @@ function deleteNotifikasi($id_notif) {
     return supabase_request('DELETE', "/rest/v1/notifikasi?id_notif=eq.$id_notif");
 }
 
+function deleteNotifikasiByUser($id_user) {
+    return supabase_request('DELETE', "/rest/v1/notifikasi?id_user=eq.$id_user");
+}
+
 // ==================== TAGIHAN ====================
 function getTagihan($id_tagihan = null) {
     if ($id_tagihan) {
@@ -146,6 +154,14 @@ function updateTagihan($id_tagihan, $data) {
 
 function deleteTagihan($id_tagihan) {
     return supabase_request('DELETE', "/rest/v1/tagihan?id_tagihan=eq.$id_tagihan");
+}
+
+function deleteTagihanByUser($id_user) {
+    return supabase_request('DELETE', "/rest/v1/tagihan?id_user=eq.$id_user");
+}
+
+function deleteTagihanByKamar($id_kamar) {
+    return supabase_request('DELETE', "/rest/v1/tagihan?id_kamar=eq.$id_kamar");
 }
 
 // ==================== KEUANGAN ====================

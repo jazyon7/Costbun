@@ -267,6 +267,11 @@ $tagihanList = getTagihan();
                   <a href="<?= htmlspecialchars($row['bukti_pembayaran']) ?>" target="_blank" title="Lihat bukti">
                     <i class="fa fa-image" style="font-size: 20px; color: #28a745;"></i>
                   </a>
+                  <div style="display: none; width: 200px; margin: 10px auto;">
+                    <img src="<?= htmlspecialchars($row['bukti_pembayaran']) ?>" 
+                         style="max-width: 100%; border-radius: 5px; border: 1px solid #ddd;"
+                         onerror="this.parentElement.style.display='none'; this.closest('td').querySelector('.fa-image').style.color='#dc3545'; this.closest('td').querySelector('.fa-image').title='Gagal memuat gambar - Cek Supabase Storage';">
+                  </div>
                 <?php else: ?>
                   <span style="color: #ccc;">-</span>
                 <?php endif; ?>
@@ -380,9 +385,20 @@ $tagihanList = getTagihan();
                           ${data.bukti_pembayaran ? `
                           <div style="margin-bottom: 15px;">
                               <div style="font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600;">BUKTI PEMBAYARAN</div>
-                              <a href="${data.bukti_pembayaran}" target="_blank">
-                                  <img src="${data.bukti_pembayaran}" style="max-width: 100%; border-radius: 8px; border: 2px solid #e0e0e0; cursor: pointer;" alt="Bukti Pembayaran">
-                              </a>
+                              <div style="position: relative;">
+                                  <a href="${data.bukti_pembayaran}" target="_blank">
+                                      <img src="${data.bukti_pembayaran}" 
+                                           style="max-width: 100%; border-radius: 8px; border: 2px solid #e0e0e0; cursor: pointer;" 
+                                           alt="Bukti Pembayaran"
+                                           onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='block';">
+                                  </a>
+                                  <div style="display: none; padding: 20px; background: #f8d7da; border-radius: 8px; text-align: center; color: #721c24;">
+                                      <i class="fa fa-exclamation-triangle" style="font-size: 32px; margin-bottom: 10px; display: block;"></i>
+                                      <strong>Gagal memuat gambar</strong>
+                                      <div style="font-size: 12px; margin-top: 5px;">Pastikan Supabase Storage bucket sudah PUBLIC</div>
+                                      <a href="${data.bukti_pembayaran}" target="_blank" style="display: inline-block; margin-top: 10px; padding: 5px 15px; background: #721c24; color: white; text-decoration: none; border-radius: 5px; font-size: 12px;">Coba Buka Link</a>
+                                  </div>
+                              </div>
                               <div style="font-size: 11px; color: #999; margin-top: 5px;">Klik gambar untuk melihat ukuran penuh</div>
                           </div>
                           ` : `

@@ -96,6 +96,20 @@ if (!$data) {
     echo "<script>alert('User not found!'); window.location.href='login.php';</script>";
     exit;
 }
+
+// Get tagihan untuk user ini (hanya jika bukan admin)
+$tagihanList = [];
+if ($data['role'] !== 'admin') {
+    $allTagihan = getTagihan();
+    // Filter tagihan by user
+    if (is_array($allTagihan)) {
+        foreach ($allTagihan as $tagihan) {
+            if ($tagihan['id_user'] == $id_user) {
+                $tagihanList[] = $tagihan;
+            }
+        }
+    }
+}
 ?>
 
 <style>
@@ -367,6 +381,207 @@ if (!$data) {
   .btn-cancel:hover {
     background: #e0e0e0;
   }
+  
+  /* Tagihan Section */
+  .tagihan-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    margin-top: 25px;
+  }
+  
+  .tagihan-section h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .tagihan-section h3 i {
+    color: #667eea;
+  }
+  
+  .tagihan-list {
+    display: grid;
+    gap: 15px;
+  }
+  
+  .tagihan-item {
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 20px;
+    transition: all 0.3s;
+  }
+  
+  .tagihan-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+  }
+  
+  .tagihan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .tagihan-kamar {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .tagihan-status {
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  
+  .tagihan-status.belum_lunas {
+    background: #f8d7da;
+    color: #721c24;
+  }
+  
+  .tagihan-status.pending {
+    background: #fff3cd;
+    color: #856404;
+  }
+  
+  .tagihan-status.lunas {
+    background: #d4edda;
+    color: #155724;
+  }
+  
+  .tagihan-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .tagihan-info-item {
+    font-size: 13px;
+  }
+  
+  .tagihan-info-item label {
+    display: block;
+    color: #999;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  
+  .tagihan-info-item span {
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .tagihan-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 15px;
+  }
+  
+  .btn-upload-bukti {
+    flex: 1;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+  }
+  
+  .btn-upload-bukti:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+  }
+  
+  .btn-upload-bukti:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  .btn-view-bukti {
+    padding: 10px 20px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+  }
+  
+  .btn-view-bukti:hover {
+    background: #218838;
+    transform: translateY(-2px);
+  }
+  
+  .no-tagihan {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+  }
+  
+  .no-tagihan i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+  }
+  
+  /* Upload Modal */
+  .upload-preview {
+    margin-top: 15px;
+    text-align: center;
+  }
+  
+  .upload-preview img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+  }
+  
+  .file-input-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    width: 100%;
+  }
+  
+  .file-input-wrapper input[type=file] {
+    position: absolute;
+    left: -9999px;
+  }
+  
+  .file-input-label {
+    display: block;
+    padding: 12px;
+    border: 2px dashed #667eea;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #f8f9ff;
+    color: #667eea;
+    font-weight: 600;
+  }
+  
+  .file-input-label:hover {
+    background: #667eea;
+    color: white;
+  }
 </style>
 
 <section class="profile-section">
@@ -437,6 +652,74 @@ if (!$data) {
     </div>
     
   </div>
+  
+  <!-- Tagihan Section (only for non-admin) -->
+  <?php if ($data['role'] !== 'admin'): ?>
+  <div class="tagihan-section">
+    <h3><i class="fa fa-money-bill-wave"></i> Tagihan Pembayaran Saya</h3>
+    
+    <?php if (empty($tagihanList)): ?>
+      <div class="no-tagihan">
+        <i class="fa fa-inbox"></i>
+        <div>Tidak ada tagihan</div>
+      </div>
+    <?php else: ?>
+      <div class="tagihan-list">
+        <?php foreach ($tagihanList as $tagihan): 
+          $statusClass = strtolower(str_replace(' ', '_', $tagihan['status_pembayaran']));
+          $namaKamar = isset($tagihan['kamar']['nama']) ? $tagihan['kamar']['nama'] : 'Kamar #' . $tagihan['id_kamar'];
+          $hasBukti = !empty($tagihan['bukti_pembayaran']);
+          $isLunas = $statusClass === 'lunas';
+        ?>
+        <div class="tagihan-item">
+          <div class="tagihan-header">
+            <div class="tagihan-kamar"><?= htmlspecialchars($namaKamar) ?></div>
+            <span class="tagihan-status <?= $statusClass ?>">
+              <?= htmlspecialchars($tagihan['status_pembayaran']) ?>
+            </span>
+          </div>
+          
+          <div class="tagihan-info">
+            <div class="tagihan-info-item">
+              <label>Jumlah Tagihan</label>
+              <span>Rp <?= number_format($tagihan['jumlah'], 0, ',', '.') ?></span>
+            </div>
+            <div class="tagihan-info-item">
+              <label>Tanggal Tagihan</label>
+              <span><?= date('d M Y', strtotime($tagihan['tgl_tagihan'])) ?></span>
+            </div>
+            <div class="tagihan-info-item">
+              <label>Jatuh Tempo</label>
+              <span><?= date('d M Y', strtotime($tagihan['tgl_tempo'])) ?></span>
+            </div>
+            <?php if ($tagihan['metode_pembayaran']): ?>
+            <div class="tagihan-info-item">
+              <label>Metode Pembayaran</label>
+              <span><?= htmlspecialchars($tagihan['metode_pembayaran']) ?></span>
+            </div>
+            <?php endif; ?>
+          </div>
+          
+          <div class="tagihan-actions">
+            <?php if (!$isLunas): ?>
+              <button class="btn-upload-bukti" onclick="openUploadBukti(<?= $tagihan['id_tagihan'] ?>, '<?= htmlspecialchars($namaKamar) ?>')">
+                <i class="fa fa-upload"></i> 
+                <?= $hasBukti ? 'Ganti Bukti Pembayaran' : 'Upload Bukti Pembayaran' ?>
+              </button>
+            <?php endif; ?>
+            
+            <?php if ($hasBukti): ?>
+              <button class="btn-view-bukti" onclick="viewBukti('<?= htmlspecialchars($tagihan['bukti_pembayaran']) ?>')">
+                <i class="fa fa-image"></i> Lihat Bukti
+              </button>
+            <?php endif; ?>
+          </div>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+  </div>
+  <?php endif; ?>
 
 </section>
 
@@ -513,6 +796,46 @@ if (!$data) {
   </div>
 </div>
 
+<!-- Modal Upload Bukti -->
+<div id="modalUploadBukti" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Upload Bukti Pembayaran</h3>
+      <span class="close" onclick="closeUploadBukti()">&times;</span>
+    </div>
+    <form id="formUploadBukti" enctype="multipart/form-data">
+      <div class="modal-body">
+        <input type="hidden" id="uploadTagihanId" name="id_tagihan">
+        
+        <div class="form-group">
+          <label>Kamar</label>
+          <input type="text" id="uploadKamarNama" readonly style="background: #f8f9fa;">
+        </div>
+        
+        <div class="form-group">
+          <label for="buktiBayar">File Bukti Pembayaran (JPG, PNG - Max 2MB)</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="buktiBayar" name="bukti_pembayaran" accept="image/jpeg,image/jpg,image/png" onchange="previewImage(this)" required>
+            <label for="buktiBayar" class="file-input-label">
+              <i class="fa fa-cloud-upload-alt"></i> Pilih File Gambar
+            </label>
+          </div>
+        </div>
+        
+        <div id="uploadPreview" class="upload-preview" style="display: none;">
+          <img id="previewImg" src="" alt="Preview">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeUploadBukti()">Batal</button>
+        <button type="submit" class="btn-submit">
+          <i class="fa fa-upload"></i> Upload
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
   // Modal Edit Profile
   function openEditProfile() {
@@ -555,4 +878,96 @@ if (!$data) {
     alert('❌ <?= $_SESSION['pesan_error'] ?>');
     <?php unset($_SESSION['pesan_error']); ?>
   <?php endif; ?>
+  
+  // Upload Bukti Functions
+  function openUploadBukti(tagihanId, kamarNama) {
+    document.getElementById('uploadTagihanId').value = tagihanId;
+    document.getElementById('uploadKamarNama').value = kamarNama;
+    document.getElementById('modalUploadBukti').style.display = 'block';
+    // Reset form
+    document.getElementById('formUploadBukti').reset();
+    document.getElementById('uploadPreview').style.display = 'none';
+  }
+  
+  function closeUploadBukti() {
+    document.getElementById('modalUploadBukti').style.display = 'none';
+  }
+  
+  function previewImage(input) {
+    const preview = document.getElementById('uploadPreview');
+    const previewImg = document.getElementById('previewImg');
+    
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        previewImg.src = e.target.result;
+        preview.style.display = 'block';
+      };
+      
+      reader.readAsDataURL(input.files[0]);
+      
+      // Update label text
+      const label = input.parentElement.querySelector('label');
+      label.innerHTML = '<i class="fa fa-check"></i> ' + input.files[0].name;
+    }
+  }
+  
+  function viewBukti(url) {
+    window.open(url, '_blank');
+  }
+  
+  // Handle upload form submission
+  document.getElementById('formUploadBukti').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('.btn-submit');
+    
+    // Disable button and show loading
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Uploading...';
+    
+    try {
+      const response = await fetch('api/upload_bukti.php', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('✅ ' + result.message);
+        closeUploadBukti();
+        // Reload page to show updated data
+        window.location.reload();
+      } else {
+        alert('❌ ' + result.message);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa fa-upload"></i> Upload';
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('❌ Terjadi kesalahan saat upload. Silakan coba lagi.');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fa fa-upload"></i> Upload';
+    }
+  });
+  
+  // Close modal when clicking outside
+  window.onclick = function(event) {
+    const editModal = document.getElementById('modalEditProfile');
+    const passwordModal = document.getElementById('modalChangePassword');
+    const uploadModal = document.getElementById('modalUploadBukti');
+    
+    if (event.target === editModal) {
+      closeEditProfile();
+    }
+    if (event.target === passwordModal) {
+      closeChangePassword();
+    }
+    if (event.target === uploadModal) {
+      closeUploadBukti();
+    }
+  }
 </script>

@@ -745,8 +745,10 @@ function editUser(id) {
     // Ambil data user dari API
     fetch('api/user.php?action=get&id=' + id)
         .then(response => response.json())
-        .then(data => {
-            if (data) {
+        .then(result => {
+            if (result.success && result.data) {
+                const data = result.data;
+                
                 // Isi form edit dengan data user
                 document.getElementById('edit_id_user').value = data.id_user;
                 document.getElementById('edit_nama').value = data.nama || '';
@@ -767,6 +769,9 @@ function editUser(id) {
                 
                 if (data.foto_url) {
                     currentFotoImg.src = data.foto_url;
+                    currentFotoImg.onerror = function() {
+                        this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.nama) + '&background=667eea&color=fff';
+                    };
                     currentFotoDiv.style.display = 'block';
                 } else {
                     currentFotoDiv.style.display = 'none';
@@ -847,15 +852,34 @@ function submitEditUser(event) {
     });
 }
 
-function deleteUser(id, nama) {
-    if (confirm('Yakin ingin menghapus penyewa "' + nama + '"?\n\nData yang dihapus tidak dapat dikembalikan!')) {
-        // Tampilkan loading
-        const btn = event.target.closest('button');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+async function deleteUser(id, nama) {
+    if (!confirm('Yakin ingin menghapus penyewa "' + nama + '"?\n\nData yang dihapus tidak dapat dikembalikan!')) {
+        return;
+    }
+    
+    // Tampilkan loading
+    const btn = event.target.closest('button');
+    const originalContent = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    try {
+        const response = await fetch('api/user.php?action=delete&id=' + id);
+        const result = await response.json();
         
-        // Redirect ke API delete
-        window.location.href = 'api/user.php?action=delete&id=' + id;
+        if (result.success) {
+            alert('✅ ' + result.message);
+            window.location.reload();
+        } else {
+            alert('❌ ' + result.message);
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('❌ Terjadi kesalahan saat menghapus data');
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
     }
 }
 
