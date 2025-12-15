@@ -28,9 +28,22 @@ function deleteKamar($id_kamar) {
 // ==================== USER ====================
 function getUser($id_user = null) {
     if ($id_user) {
+        // Ambil data user tanpa JOIN untuk menghindari circular reference
         $response = supabase_request('GET', "/rest/v1/user?id_user=eq.$id_user");
-        return !empty($response) ? $response[0] : null;
+        if (!empty($response) && isset($response[0])) {
+            $user = $response[0];
+            // Ambil nama kamar secara manual jika ada id_kamar
+            if (!empty($user['id_kamar'])) {
+                $kamar = getKamar($user['id_kamar']);
+                $user['kamar_nama'] = $kamar ? $kamar['nama'] : null;
+            } else {
+                $user['kamar_nama'] = null;
+            }
+            return $user;
+        }
+        return null;
     }
+    // Get all users tanpa JOIN
     return supabase_request('GET', '/rest/v1/user?order=id_user.asc');
 }
 
@@ -39,6 +52,31 @@ function createUser($data) {
 }
 
 function updateUser($id_user, $data) {
+    // Jika ada perubahan id_kamar, sync dengan table kamar
+    if (array_key_exists('id_kamar', $data)) {
+        $oldUser = getUser($id_user);
+        $oldKamarId = $oldUser['id_kamar'] ?? null;
+        $newKamarId = $data['id_kamar'];
+        
+        // Jika user pindah dari kamar lama
+        if ($oldKamarId && $oldKamarId != $newKamarId) {
+            // Kosongkan kamar lama
+            updateKamar($oldKamarId, [
+                'id_user' => null,
+                'status' => 'kosong'
+            ]);
+        }
+        
+        // Jika user dapat kamar baru
+        if ($newKamarId) {
+            // Set kamar baru sebagai terisi
+            updateKamar($newKamarId, [
+                'id_user' => (int)$id_user,
+                'status' => 'terisi'
+            ]);
+        }
+    }
+    
     return supabase_request('PATCH', "/rest/v1/user?id_user=eq.$id_user", $data);
 }
 
@@ -129,4 +167,71 @@ function updateKeuangan($id_keuangan, $data) {
 
 function deleteKeuangan($id_keuangan) {
     return supabase_request('DELETE', "/rest/v1/keuangan?id_keuangan=eq.$id_keuangan");
+}
+
+// ==================== STORAGE ====================
+function uploadToSupabaseStorage($file, $bucket, $folder = '') {
+    require_once 'supabase.php';
+    
+    // Generate unique filename
+    $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $filename = time() . '.' . $ext;
+    $path = $folder ? "$folder/$filename" : $filename;
+    
+    // Read file content
+    $fileContent = file_get_contents($file['tmp_name']);
+    
+    // Get MIME type
+    $mimeType = $file['type'];
+    
+    // Upload to Supabase Storage
+    $url = SUPABASE_URL . "/storage/v1/object/$bucket/$path";
+    
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $fileContent);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . SUPABASE_API_KEY,
+        'Content-Type: ' . $mimeType,
+        'x-upsert: true' // Allow overwrite if file exists
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200 || $httpCode === 201) {
+        // Return public URL
+        return [
+            'success' => true,
+            'url' => SUPABASE_URL . "/storage/v1/object/public/$bucket/$path",
+            'path' => $path
+        ];
+    } else {
+        error_log("Upload failed - HTTP $httpCode: $response");
+        return [
+            'success' => false,
+            'error' => $response
+        ];
+    }
+}
+
+function deleteFromSupabaseStorage($bucket, $path) {
+    require_once 'supabase.php';
+    
+    $url = SUPABASE_URL . "/storage/v1/object/$bucket/$path";
+    
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . SUPABASE_API_KEY
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    return $httpCode === 200;
 }

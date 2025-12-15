@@ -31,17 +31,24 @@ $isAdmin = ($currentUserRole === 'admin');
 
       // Ambil data kamar dan user
       $kamarList = getKamar();
-      $userList = getUser();
+      
+      // Ambil user tanpa JOIN untuk menghindari error jika id_kamar belum ada
+      $userListRaw = supabase_request('GET', '/rest/v1/user?order=id_user.asc');
       
       // Buat mapping id_user ke nama untuk quick lookup
       $userMap = [];
-      if (is_array($userList)) {
-          foreach ($userList as $user) {
-              $userMap[$user['id_user']] = $user['nama'];
+      
+      // Check if valid response
+      if (is_array($userListRaw) && !isset($userListRaw['error'])) {
+          foreach ($userListRaw as $user) {
+              if (isset($user['id_user']) && isset($user['nama'])) {
+                  $userMap[$user['id_user']] = $user['nama'];
+              }
           }
       }
       
-      if (!empty($kamarList)) {
+      // Check if kamarList is valid
+      if (is_array($kamarList) && !isset($kamarList['error']) && !empty($kamarList)) {
           foreach($kamarList as $row) {
               // Ambil nama penghuni jika ada id_user
               $penghuniNama = null;
@@ -107,7 +114,27 @@ $isAdmin = ($currentUserRole === 'admin');
 
       <?php 
           }
-      } 
+      } else {
+          // Tampilkan pesan jika tidak ada data atau error
+          echo '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">';
+          
+          if (isset($kamarList['error'])) {
+              echo '<div style="color: #dc3545; background: #f8d7da; padding: 20px; border-radius: 8px; margin: 20px 0;">';
+              echo '<i class="fas fa-exclamation-triangle"></i> ';
+              echo '<strong>Error:</strong> ' . htmlspecialchars($kamarList['message'] ?? 'Terjadi kesalahan saat mengambil data kamar');
+              echo '</div>';
+          } else {
+              echo '<div style="color: #666; font-size: 16px;">';
+              echo '<i class="fas fa-info-circle" style="font-size: 48px; margin-bottom: 10px; display: block;"></i>';
+              echo 'Belum ada data kamar. ';
+              if ($isAdmin) {
+                  echo 'Klik tombol "+" untuk menambah kamar baru.';
+              }
+              echo '</div>';
+          }
+          
+          echo '</div>';
+      }
       ?>
 
           <?php if ($isAdmin): ?>
@@ -140,9 +167,9 @@ $isAdmin = ($currentUserRole === 'admin');
                     <option value="">-- Pilih Penghuni --</option>
                     <?php
                     // Tampilkan penghuni yang belum punya kamar dan bukan admin
-                    if (is_array($userList)) {
-                        foreach ($userList as $user) {
-                            if (strtolower($user['role']) !== 'admin') {
+                    if (is_array($userListRaw) && !isset($userListRaw['error'])) {
+                        foreach ($userListRaw as $user) {
+                            if (isset($user['role']) && strtolower($user['role']) !== 'admin') {
                                 echo '<option value="' . $user['id_user'] . '">' . htmlspecialchars($user['nama']) . ' (' . htmlspecialchars($user['email']) . ')</option>';
                             }
                         }

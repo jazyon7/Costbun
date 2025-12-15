@@ -92,7 +92,7 @@ switch ($action) {
             exit;
         }
         
-        // Update kamar dengan id_user dan status terisi
+        // Step 1: Update kamar dengan id_user dan status terisi
         $data = [
             'id_user' => (int)$id_user,
             'status' => 'terisi'
@@ -101,6 +101,13 @@ switch ($action) {
         error_log("Assign Penghuni - Updating kamar $id_kamar with data: " . json_encode($data));
         
         $result = updateKamar($id_kamar, $data);
+        
+        // Step 2: Update user dengan id_kamar (SINKRONISASI)
+        error_log("Assign Penghuni - Updating user $id_user with id_kamar=$id_kamar");
+        $userUpdateResult = supabase_request('PATCH', "/rest/v1/user?id_user=eq.$id_user", [
+            'id_kamar' => (int)$id_kamar
+        ]);
+        error_log("Assign Penghuni - User update result: " . json_encode($userUpdateResult));
         
         error_log("Assign Penghuni - Update result: " . json_encode($result));
         
@@ -150,6 +157,10 @@ switch ($action) {
             exit;
         }
         
+        // Get kamar data untuk mendapatkan id_user
+        $kamar = getKamar($id);
+        $id_user = $kamar['id_user'] ?? null;
+        
         // Update kamar: hapus id_user dan ubah status jadi kosong
         $data = [
             'id_user' => null,
@@ -157,6 +168,13 @@ switch ($action) {
         ];
         
         $result = updateKamar($id, $data);
+        
+        // Sync: Update user untuk menghapus id_kamar
+        if ($id_user) {
+            supabase_request('PATCH', "/rest/v1/user?id_user=eq.$id_user", [
+                'id_kamar' => null
+            ]);
+        }
         
         if (isset($result['error'])) {
             header("Location: ../index.php?page=data_kamar&error=Gagal mengosongkan kamar");

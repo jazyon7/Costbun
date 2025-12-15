@@ -72,18 +72,15 @@ switch ($action) {
                 exit;
             }
             
-            // Generate unique filename
-            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $filename = 'laporan_' . time() . '_' . uniqid() . '.' . $ext;
-            $uploadPath = __DIR__ . '/../img/' . $filename;
+            // Upload to Supabase Storage
+            $uploadResult = uploadToSupabaseStorage($file, 'uploads', 'laporan');
             
-            // Move uploaded file
-            if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
-                $gambarUrl = 'img/' . $filename;
-                error_log("Image uploaded successfully: $gambarUrl");
+            if ($uploadResult['success']) {
+                $gambarUrl = $uploadResult['url'];
+                error_log("Image uploaded successfully to Supabase: $gambarUrl");
             } else {
-                error_log("Failed to move uploaded file");
-                echo json_encode(['success' => false, 'message' => 'Gagal mengupload gambar']);
+                error_log("Failed to upload to Supabase: " . json_encode($uploadResult));
+                echo json_encode(['success' => false, 'message' => 'Gagal mengupload gambar ke Supabase Storage']);
                 exit;
             }
         }
@@ -104,9 +101,12 @@ switch ($action) {
         error_log("Create laporan - Result: " . json_encode($result));
         
         if (isset($result['error'])) {
-            // Delete uploaded image if database insert failed
-            if ($gambarUrl && file_exists(__DIR__ . '/../' . $gambarUrl)) {
-                unlink(__DIR__ . '/../' . $gambarUrl);
+            // Delete uploaded image from Supabase Storage if database insert failed
+            if ($gambarUrl && strpos($gambarUrl, 'supabase.co') !== false) {
+                preg_match('/uploads\/laporan\/(.+)$/', $gambarUrl, $matches);
+                if (isset($matches[0])) {
+                    deleteFromSupabaseStorage('uploads', $matches[0]);
+                }
             }
             
             echo json_encode([
@@ -175,23 +175,24 @@ switch ($action) {
                 exit;
             }
             
-            // Delete old image if exists
-            if ($gambarUrl && file_exists(__DIR__ . '/../' . $gambarUrl)) {
-                unlink(__DIR__ . '/../' . $gambarUrl);
+            // Delete old image from Supabase Storage if exists
+            if ($gambarUrl && strpos($gambarUrl, 'supabase.co') !== false) {
+                // Extract path from URL
+                preg_match('/uploads\/laporan\/(.+)$/', $gambarUrl, $matches);
+                if (isset($matches[0])) {
+                    deleteFromSupabaseStorage('uploads', $matches[0]);
+                }
             }
             
-            // Generate unique filename
-            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $filename = 'laporan_' . time() . '_' . uniqid() . '.' . $ext;
-            $uploadPath = __DIR__ . '/../img/' . $filename;
+            // Upload to Supabase Storage
+            $uploadResult = uploadToSupabaseStorage($file, 'uploads', 'laporan');
             
-            // Move uploaded file
-            if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
-                $gambarUrl = 'img/' . $filename;
-                error_log("New image uploaded successfully: $gambarUrl");
+            if ($uploadResult['success']) {
+                $gambarUrl = $uploadResult['url'];
+                error_log("New image uploaded successfully to Supabase: $gambarUrl");
             } else {
-                error_log("Failed to move uploaded file");
-                echo json_encode(['success' => false, 'message' => 'Gagal mengupload gambar']);
+                error_log("Failed to upload to Supabase: " . json_encode($uploadResult));
+                echo json_encode(['success' => false, 'message' => 'Gagal mengupload gambar ke Supabase Storage']);
                 exit;
             }
         }
@@ -243,12 +244,13 @@ switch ($action) {
             exit;
         }
         
-        // Delete image file if exists
-        if (!empty($existingLaporan['gambar_url'])) {
-            $imagePath = __DIR__ . '/../' . $existingLaporan['gambar_url'];
-            if (file_exists($imagePath)) {
-                unlink($imagePath);
-                error_log("Deleted image file: " . $existingLaporan['gambar_url']);
+        // Delete image file from Supabase Storage if exists
+        if (!empty($existingLaporan['gambar_url']) && strpos($existingLaporan['gambar_url'], 'supabase.co') !== false) {
+            // Extract path from URL
+            preg_match('/uploads\/laporan\/(.+)$/', $existingLaporan['gambar_url'], $matches);
+            if (isset($matches[0])) {
+                deleteFromSupabaseStorage('uploads', $matches[0]);
+                error_log("Deleted image from Supabase: " . $matches[0]);
             }
         }
         

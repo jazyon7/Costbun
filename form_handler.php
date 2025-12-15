@@ -14,24 +14,47 @@ $table = $_POST['table'] ?? '';
 
 switch ($table) {
     case 'user':
+        // Hash password untuk keamanan
+        $password = $_POST['password'] ?? '';
+        $hashedPassword = !empty($password) ? password_hash($password, PASSWORD_DEFAULT) : '-';
+        
         $data = [
             'nama' => $_POST['nama'] ?? '',
             'nomor' => $_POST['nomor'] ?? '',
             'alamat' => $_POST['alamat'] ?? '',
             'ktp_ktm' => $_POST['ktp_ktm'] ?? '',
             'email' => $_POST['email'] ?? '',
-            'role' => $_POST['role'] ?? 'penyewa',
+            'role' => $_POST['role'] ?? 'penghuni kos',
             'username' => $_POST['username'] ?? '',
-            'password' => $_POST['password'] ?? '',
+            'password' => $hashedPassword,
             'telegram_id' => $_POST['telegram_id'] ?? ''
         ];
         
+        // Tambahkan id_kamar jika dipilih
+        $id_kamar_input = null;
+        if (!empty($_POST['id_kamar'])) {
+            $data['id_kamar'] = (int)$_POST['id_kamar'];
+            $id_kamar_input = (int)$_POST['id_kamar'];
+        }
+        
         $result = createUser($data);
         
+        // Sync: Update kamar jika user dibuat dengan kamar
+        if ($id_kamar_input && !isset($result['error'])) {
+            // Get newly created user ID
+            if (is_array($result) && isset($result[0]['id_user'])) {
+                $new_user_id = $result[0]['id_user'];
+                updateKamar($id_kamar_input, [
+                    'id_user' => (int)$new_user_id,
+                    'status' => 'terisi'
+                ]);
+            }
+        }
+        
         if (isset($result['error'])) {
-            header("Location: form_tambah_data.php?error=Gagal menambah user");
+            header("Location: index.php?page=tambah_data&error=Gagal menambah user: " . urlencode($result['message'] ?? 'Unknown error'));
         } else {
-            header("Location: form_tambah_data.php?msg=User berhasil ditambahkan");
+            header("Location: index.php?page=tambah_data&msg=User berhasil ditambahkan" . ($id_kamar_input ? " dan di-assign ke kamar" : ""));
         }
         break;
     

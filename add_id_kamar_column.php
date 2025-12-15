@@ -1,0 +1,110 @@
+<?php
+require_once 'config/supabase.php';
+
+echo "<h2>🔧 Tambah Kolom id_kamar ke Tabel User</h2>";
+
+echo "<div style='padding: 20px; background: #fff3cd; border-radius: 8px; margin: 20px 0;'>";
+echo "<h3>⚠️ Penting!</h3>";
+echo "<p>Script ini tidak bisa menambahkan kolom secara otomatis karena Supabase REST API tidak support DDL (Data Definition Language).</p>";
+echo "<p>Anda harus menambahkan kolom secara manual melalui <strong>Supabase Dashboard</strong>.</p>";
+echo "</div>";
+
+echo "<div style='padding: 20px; background: #e3f2fd; border-radius: 8px; margin: 20px 0;'>";
+echo "<h3>📋 Langkah-langkah:</h3>";
+echo "<ol style='line-height: 2.5;'>";
+echo "<li>Buka <a href='https://supabase.com/dashboard' target='_blank' style='color: #2196F3;'>Supabase Dashboard</a></li>";
+echo "<li>Pilih project Anda</li>";
+echo "<li>Buka <strong>Table Editor</strong> → Pilih tabel <code>user</code></li>";
+echo "<li>Klik tombol <strong>+ New Column</strong></li>";
+echo "<li>Isi detail kolom:</li>";
+echo "<ul style='margin-top: 10px;'>";
+echo "<li><strong>Name:</strong> <code>id_kamar</code></li>";
+echo "<li><strong>Type:</strong> <code>int8</code> atau <code>integer</code></li>";
+echo "<li><strong>Default value:</strong> <code>NULL</code></li>";
+echo "<li><strong>Is Nullable:</strong> ✅ (Centang)</li>";
+echo "<li><strong>Is Unique:</strong> ❌ (Jangan centang)</li>";
+echo "<li><strong>Foreign Key:</strong> Pilih <code>public.kamar</code> → <code>id_kamar</code></li>";
+echo "</ul>";
+echo "<li>Klik <strong>Save</strong></li>";
+echo "</ol>";
+echo "</div>";
+
+echo "<div style='padding: 20px; background: #f5f5f5; border-radius: 8px; margin: 20px 0;'>";
+echo "<h3>🔍 Atau gunakan SQL Editor:</h3>";
+echo "<p>Jika lebih nyaman dengan SQL, buka <strong>SQL Editor</strong> dan jalankan query ini:</p>";
+echo "<pre style='background: #2d2d2d; color: #f8f8f2; padding: 20px; border-radius: 8px; overflow-x: auto;'>";
+echo "-- Tambah kolom id_kamar ke tabel user\n";
+echo "ALTER TABLE \"user\" \n";
+echo "ADD COLUMN id_kamar INTEGER NULL;\n\n";
+echo "-- Tambah foreign key constraint (opsional tapi recommended)\n";
+echo "ALTER TABLE \"user\" \n";
+echo "ADD CONSTRAINT fk_user_kamar \n";
+echo "FOREIGN KEY (id_kamar) \n";
+echo "REFERENCES kamar(id_kamar) \n";
+echo "ON DELETE SET NULL;\n\n";
+echo "-- Buat index untuk performa (opsional)\n";
+echo "CREATE INDEX idx_user_kamar ON \"user\"(id_kamar);\n";
+echo "</pre>";
+echo "<button onclick='copySQL()' style='padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;'>";
+echo "<i class='fa fa-copy'></i> Copy SQL";
+echo "</button>";
+echo "</div>";
+
+echo "<div style='padding: 20px; background: #d4edda; border-radius: 8px; margin: 20px 0;'>";
+echo "<h3>✅ Setelah Selesai:</h3>";
+echo "<ol style='line-height: 2;'>";
+echo "<li>Refresh halaman ini</li>";
+echo "<li>Jalankan script assign kamar: <a href='assign_kamar_to_user.php' style='color: #155724;'>assign_kamar_to_user.php</a></li>";
+echo "<li>Cek hasilnya di: <a href='index.php?page=data_kos' style='color: #155724;'>Data Kos</a></li>";
+echo "</ol>";
+echo "</div>";
+
+echo "<div style='padding: 20px; background: #fff; border-radius: 8px; margin: 20px 0;'>";
+echo "<h3>📊 Informasi Teknis:</h3>";
+echo "<table style='width: 100%; border-collapse: collapse;'>";
+echo "<tr style='background: #f5f5f5;'>";
+echo "<th style='padding: 10px; border: 1px solid #ddd; text-align: left;'>Property</th>";
+echo "<th style='padding: 10px; border: 1px solid #ddd; text-align: left;'>Value</th>";
+echo "</tr>";
+echo "<tr>";
+echo "<td style='padding: 10px; border: 1px solid #ddd;'>Column Name</td>";
+echo "<td style='padding: 10px; border: 1px solid #ddd;'><code>id_kamar</code></td>";
+echo "</tr>";
+echo "<tr>";
+echo "<td style='padding: 10px; border: 1px solid #ddd;'>Data Type</td>";
+echo "<td style='padding: 10px; border: 1px solid #ddd;'><code>INTEGER</code> atau <code>int8</code></td>";
+echo "</tr>";
+echo "<tr>";
+echo "<td style='padding: 10px; border: 1px solid #ddd;'>Nullable</td>";
+echo "<td style='padding: 10px; border: 1px solid #ddd;'>✅ Yes (TRUE)</td>";
+echo "</tr>";
+echo "<tr>";
+echo "<td style='padding: 10px; border: 1px solid #ddd;'>Default Value</td>";
+echo "<td style='padding: 10px; border: 1px solid #ddd;'><code>NULL</code></td>";
+echo "</tr>";
+echo "<tr>";
+echo "<td style='padding: 10px; border: 1px solid #ddd;'>Foreign Key</td>";
+echo "<td style='padding: 10px; border: 1px solid #ddd;'><code>kamar(id_kamar)</code></td>";
+echo "</tr>";
+echo "<tr>";
+echo "<td style='padding: 10px; border: 1px solid #ddd;'>On Delete</td>";
+echo "<td style='padding: 10px; border: 1px solid #ddd;'><code>SET NULL</code></td>";
+echo "</tr>";
+echo "</table>";
+echo "</div>";
+
+echo "<script>";
+echo "function copySQL() {";
+echo "  const sql = `-- Tambah kolom id_kamar ke tabel user\nALTER TABLE \"user\" \nADD COLUMN id_kamar INTEGER NULL;\n\n-- Tambah foreign key constraint (opsional tapi recommended)\nALTER TABLE \"user\" \nADD CONSTRAINT fk_user_kamar \nFOREIGN KEY (id_kamar) \nREFERENCES kamar(id_kamar) \nON DELETE SET NULL;\n\n-- Buat index untuk performa (opsional)\nCREATE INDEX idx_user_kamar ON \"user\"(id_kamar);`;";
+echo "  navigator.clipboard.writeText(sql).then(() => {";
+echo "    alert('✅ SQL berhasil dicopy ke clipboard!');";
+echo "  });";
+echo "}";
+echo "</script>";
+
+echo "<hr>";
+echo "<p style='margin-top: 30px;'>";
+echo "<a href='check_user_fields.php' style='padding: 10px 20px; background: #2196F3; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px;'>Cek Field User</a>";
+echo "<a href='index.php?page=data_kos' style='padding: 10px 20px; background: #4CAF50; color: white; text-decoration: none; border-radius: 5px;'>Ke Data Kos</a>";
+echo "</p>";
+?>

@@ -159,56 +159,112 @@ $userCount = count($userList);
         <!-- Form User -->
         <div id="user" class="tab-content-form">
             <h2>Tambah Penyewa/User</h2>
+            
+            <!-- Daftar User Yang Sudah Ada -->
+            <?php if ($userError): ?>
+            <div style="background: #fff3cd; color: #856404; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffa726;">
+                ⚠️ <?= htmlspecialchars($userError) ?>
+            </div>
+            <?php elseif (count($userList) > 0): ?>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3681ff;">
+                <h4 style="margin: 0 0 10px 0; color: #333; font-size: 14px;">👥 Penyewa Yang Sudah Ada (<?= count($userList) ?> user):</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; max-height: 150px; overflow-y: auto;">
+                    <?php foreach ($userList as $u): ?>
+                        <?php if (is_array($u) && isset($u['nama'], $u['role'])): ?>
+                        <div style="background: white; padding: 8px 12px; border-radius: 6px; font-size: 13px; border: 1px solid #e0e0e0;">
+                            <strong><?= htmlspecialchars($u['nama']) ?></strong>
+                            <br>
+                            <span style="color: #666;"><?= htmlspecialchars($u['email'] ?? '-') ?></span>
+                            <br>
+                            <span style="color: <?= $u['role'] == 'admin' ? '#3681ff' : '#4CAF50' ?>;">
+                                <?= ucfirst($u['role']) ?>
+                            </span>
+                            <?php if (!empty($u['id_kamar']) && isset($kamarMap[$u['id_kamar']])): ?>
+                            - <strong><?= htmlspecialchars($kamarMap[$u['id_kamar']]) ?></strong>
+                            <?php endif; ?>
+                        </div>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php else: ?>
+            <div style="background: #e3f2fd; color: #1565c0; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3681ff;">
+                ℹ️ Belum ada data user. Silakan tambahkan user pertama Anda.
+            </div>
+            <?php endif; ?>
+            
             <form action="form_handler.php" method="POST">
                 <input type="hidden" name="table" value="user">
                 
                 <div class="form-group">
                     <label>Nama Lengkap *</label>
-                    <input type="text" name="nama" required>
+                    <input type="text" name="nama" required placeholder="John Doe">
                 </div>
                 
                 <div class="form-group">
-                    <label>Nomor HP *</label>
-                    <input type="text" name="nomor" required>
+                    <label>Nomor HP/WA *</label>
+                    <input type="text" name="nomor" required placeholder="08123456789">
                 </div>
                 
                 <div class="form-group">
                     <label>Email *</label>
-                    <input type="email" name="email" required>
+                    <input type="email" name="email" required placeholder="user@email.com">
                 </div>
                 
                 <div class="form-group">
                     <label>Alamat *</label>
-                    <textarea name="alamat" required></textarea>
+                    <textarea name="alamat" required placeholder="Jl. Contoh No. 123"></textarea>
                 </div>
                 
                 <div class="form-group">
                     <label>Nomor KTP/KTM *</label>
-                    <input type="text" name="ktp_ktm" required>
+                    <input type="text" name="ktp_ktm" required placeholder="1234567890123456">
                 </div>
                 
                 <div class="form-group">
                     <label>Role *</label>
                     <select name="role" required>
-                        <option value="penyewa">Penyewa</option>
+                        <option value="">-- Pilih Role --</option>
+                        <option value="penghuni kos">Penghuni Kos</option>
                         <option value="admin">Admin</option>
-                        <option value="pemilik">Pemilik</option>
                     </select>
+                    <small style="color: #666;">Sesuai dengan database: "penghuni kos" atau "admin"</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Kamar (opsional)</label>
+                    <select name="id_kamar">
+                        <option value="">-- Pilih Kamar (Opsional) --</option>
+                        <?php if (is_array($kamarList)) { 
+                            foreach ($kamarList as $kamar) { 
+                                if (is_array($kamar) && isset($kamar['id_kamar'], $kamar['nama'])) {
+                                    $statusLabel = $kamar['status'] == 'kosong' ? '✓ Tersedia' : '✗ Terisi';
+                                    $disabled = $kamar['status'] != 'kosong' ? 'disabled' : '';
+                                    ?>
+                                    <option value="<?= $kamar['id_kamar'] ?>" <?= $disabled ?>>
+                                        <?= htmlspecialchars($kamar['nama']) ?> - Rp <?= number_format($kamar['harga'], 0, ',', '.') ?> (<?= $statusLabel ?>)
+                                    </option>
+                                <?php } 
+                            } 
+                        } ?>
+                    </select>
+                    <small style="color: #666;">Pilih kamar jika user langsung menempati kamar. Kamar akan otomatis ter-update.</small>
                 </div>
                 
                 <div class="form-group">
                     <label>Username *</label>
-                    <input type="text" name="username" required>
+                    <input type="text" name="username" required placeholder="username123">
                 </div>
                 
                 <div class="form-group">
                     <label>Password *</label>
-                    <input type="password" name="password" required>
+                    <input type="password" name="password" required minlength="6" placeholder="Min. 6 karakter">
                 </div>
                 
                 <div class="form-group">
                     <label>Telegram ID (opsional)</label>
-                    <input type="text" name="telegram_id">
+                    <input type="text" name="telegram_id" placeholder="123456789">
+                    <small style="color: #666;">Untuk notifikasi via Telegram (opsional)</small>
                 </div>
                 
                 <button type="submit" class="btn-submit">Tambah Penyewa</button>

@@ -36,6 +36,7 @@ $isAdmin = ($currentUserRole === 'admin');
               <thead>
                   <tr>
                       <th>No</th>
+                      <th>Foto</th>
                       <th>Nama Penyewa</th>
                       <th>No. Kamar</th>
                       <th>Kontak</th>
@@ -49,16 +50,25 @@ $isAdmin = ($currentUserRole === 'admin');
                   <?php
                   require_once __DIR__ . '/../config/supabase_helper.php';
 
-                  // Ambil semua user
+                  // Ambil semua user (sudah diperbaiki di supabase_helper.php)
                   $no = 1;
-                  $userList = getUser();
+                  $userList = getUser(); // Gunakan fungsi helper yang sudah diperbaiki
+                  
+                  // Ambil data kamar untuk mapping
+                  $kamarList = getKamar();
+                  $kamarMap = [];
+                  if (is_array($kamarList) && !isset($kamarList['error'])) {
+                      foreach ($kamarList as $kamar) {
+                          $kamarMap[$kamar['id_kamar']] = $kamar['nama'];
+                      }
+                  }
 
                   // Debug: Cek tipe data
-                  if (!is_array($userList)) {
-                      echo "<tr><td colspan='7' style='text-align:center; color:red;'>";
+                  if (!is_array($userList) || isset($userList['error'])) {
+                      echo "<tr><td colspan='8' style='text-align:center; color:red;'>";
                       echo "Error: Data tidak valid. ";
-                      if (isset($userList['error'])) {
-                          echo "Message: " . htmlspecialchars($userList['message'] ?? 'Unknown error');
+                      if (isset($userList['error']) && isset($userList['message'])) {
+                          echo "Message: " . htmlspecialchars($userList['message']);
                       }
                       echo "</td></tr>";
                   } else if (!empty($userList)) {
@@ -78,11 +88,25 @@ $isAdmin = ($currentUserRole === 'admin');
                           }
                           
                           $noHp = $row['nomor'] ?? '-';
-                          $noKamar = '-'; // Field no_kamar bisa ditambahkan nanti jika perlu
+                          // Get nama kamar from mapping
+                          $idKamar = $row['id_kamar'] ?? null;
+                          $noKamar = ($idKamar && isset($kamarMap[$idKamar])) ? $kamarMap[$idKamar] : '-';
                   ?>
                   
                   <tr>
                       <td><?= $no++; ?></td>
+                      <td style="text-align: center;">
+                        <?php if (!empty($row['foto_url'])): ?>
+                          <img src="<?= htmlspecialchars($row['foto_url']) ?>" 
+                               style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e0e0e0;"
+                               alt="Foto"
+                               onerror="this.src='https://ui-avatars.com/api/?name=<?= urlencode($row['nama']) ?>&background=667eea&color=fff'">
+                        <?php else: ?>
+                          <img src="https://ui-avatars.com/api/?name=<?= urlencode($row['nama']) ?>&background=667eea&color=fff" 
+                               style="width: 40px; height: 40px; border-radius: 50%;" 
+                               alt="Avatar">
+                        <?php endif; ?>
+                      </td>
                       <td><?= htmlspecialchars($row['nama']); ?></td>
                       <td><strong><?= htmlspecialchars($noKamar); ?></strong></td>
                       <td><?= htmlspecialchars($noHp); ?></td>
@@ -117,7 +141,7 @@ $isAdmin = ($currentUserRole === 'admin');
                   <?php 
                       }
                   } else {
-                      echo "<tr><td colspan='7' style='text-align:center;'>Tidak ada data penyewa</td></tr>";
+                      echo "<tr><td colspan='8' style='text-align:center;'>Tidak ada data penyewa</td></tr>";
                   }
                   ?>
               </tbody>
@@ -300,8 +324,22 @@ $isAdmin = ($currentUserRole === 'admin');
                         <option value="admin">Admin</option>
                         <option value="penghuni kos">Penghuni Kos</option>
                     </select>
-                </div>
-            </div>
+                </div>                
+                <div class="form-group">
+                    <label>Kamar</label>
+                    <select name="id_kamar">
+                        <option value="">-- Pilih Kamar --</option>
+                        <?php
+                        $kamarList = getKamar();
+                        if (!empty($kamarList)) {
+                            foreach ($kamarList as $kamar) {
+                                echo "<option value='{$kamar['id_kamar']}'>{$kamar['nama']} - Rp " . number_format($kamar['harga'], 0, ',', '.') . " ({$kamar['status']})</option>";
+                            }
+                        }
+                        ?>
+                    </select>
+                    <small style="color: #666;">Opsional, pilih jika penghuni sudah memiliki kamar</small>
+                </div>            </div>
             
             <div class="form-row">
                 <div class="form-group">
@@ -331,6 +369,15 @@ $isAdmin = ($currentUserRole === 'admin');
                     <label>Telegram ID</label>
                     <input type="text" name="telegram_id">
                 </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Foto Profil</label>
+                <input type="file" id="add_foto" name="foto" accept="image/*" onchange="previewAddFoto(event)">
+                <div id="add_foto_preview" style="margin-top: 10px; display: none;">
+                    <img id="add_foto_preview_img" src="" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                </div>
+                <small style="color: #666;">Format: JPG, PNG, GIF (Max 5MB)</small>
             </div>
             
             <div class="form-actions">
@@ -386,6 +433,28 @@ $isAdmin = ($currentUserRole === 'admin');
             
             <div class="form-row">
                 <div class="form-group">
+                    <label>Kamar</label>
+                    <select name="id_kamar" id="edit_id_kamar">
+                        <option value="">-- Pilih Kamar --</option>
+                        <?php
+                        $kamarList = getKamar();
+                        if (!empty($kamarList)) {
+                            foreach ($kamarList as $kamar) {
+                                echo "<option value='{$kamar['id_kamar']}'>{$kamar['nama']} - Rp " . number_format($kamar['harga'], 0, ',', '.') . " ({$kamar['status']})</option>";
+                            }
+                        }
+                        ?>
+                    </select>
+                    <small style="color: #666;">Opsional, kosongkan jika tidak ada kamar</small>
+                </div>
+                
+                <div class="form-group">
+                    <!-- Empty for alignment -->
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
                     <label>Username *</label>
                     <input type="text" name="username" id="edit_username" required readonly style="background: #f5f5f5;">
                     <small style="color: #666;">Username tidak dapat diubah</small>
@@ -413,6 +482,21 @@ $isAdmin = ($currentUserRole === 'admin');
                     <label>Telegram ID</label>
                     <input type="text" name="telegram_id" id="edit_telegram_id">
                 </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Foto Profil</label>
+                <input type="hidden" id="edit_foto_lama" name="foto_lama">
+                <div id="edit_foto_current" style="margin-bottom: 10px; display: none;">
+                    <p style="font-size: 12px; color: #666; margin-bottom: 5px;">Foto saat ini:</p>
+                    <img id="edit_foto_current_img" src="" style="max-width: 150px; max-height: 150px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                </div>
+                <input type="file" id="edit_foto" name="foto" accept="image/*" onchange="previewEditFoto(event)">
+                <div id="edit_foto_preview" style="margin-top: 10px; display: none;">
+                    <p style="font-size: 12px; color: #666; margin-bottom: 5px;">Preview foto baru:</p>
+                    <img id="edit_foto_preview_img" src="" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                </div>
+                <small style="color: #666;">Format: JPG, PNG, GIF (Max 5MB). Kosongkan jika tidak ingin mengubah foto.</small>
             </div>
             
             <div class="form-actions">
@@ -615,23 +699,23 @@ function submitAddUser(event) {
         return;
     }
     
+    // Validasi file foto jika ada
+    const fotoFile = formData.get('foto');
+    if (fotoFile && fotoFile.size > 0) {
+        if (fotoFile.size > 5 * 1024 * 1024) {
+            alert('Ukuran foto maksimal 5MB!');
+            return;
+        }
+    }
+    
     // Disable button dan tampilkan loading
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
     
-    // Convert FormData ke URLSearchParams
-    const params = new URLSearchParams();
-    for (let [key, value] of formData.entries()) {
-        params.append(key, value);
-    }
-    
-    // Kirim data via fetch
+    // Kirim data via fetch (using FormData for file upload)
     fetch('api/user.php?action=create', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: params.toString()
+        body: formData // Send FormData directly (no Content-Type header)
     })
     .then(response => response.json())
     .then(data => {
@@ -674,6 +758,23 @@ function editUser(id) {
                 document.getElementById('edit_alamat').value = data.alamat || '';
                 document.getElementById('edit_ktp_ktm').value = data.ktp_ktm || '';
                 document.getElementById('edit_telegram_id').value = data.telegram_id || '';
+                document.getElementById('edit_id_kamar').value = data.id_kamar || '';
+                
+                // Handle foto
+                document.getElementById('edit_foto_lama').value = data.foto_url || '';
+                const currentFotoDiv = document.getElementById('edit_foto_current');
+                const currentFotoImg = document.getElementById('edit_foto_current_img');
+                
+                if (data.foto_url) {
+                    currentFotoImg.src = data.foto_url;
+                    currentFotoDiv.style.display = 'block';
+                } else {
+                    currentFotoDiv.style.display = 'none';
+                }
+                
+                // Reset preview foto baru
+                document.getElementById('edit_foto_preview').style.display = 'none';
+                document.getElementById('edit_foto').value = '';
                 
                 // Buka modal
                 openEditUserModal();
@@ -706,30 +807,26 @@ function submitEditUser(event) {
     const formData = new FormData(form);
     const id = formData.get('id_user');
     
+    // Validasi file foto jika ada
+    const fotoFile = formData.get('foto');
+    if (fotoFile && fotoFile.size > 0) {
+        if (fotoFile.size > 5 * 1024 * 1024) {
+            alert('Ukuran foto maksimal 5MB!');
+            return;
+        }
+    } else {
+        // Remove empty file field
+        formData.delete('foto');
+    }
+    
     // Disable button dan tampilkan loading
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
     
-    // Convert FormData ke URLSearchParams
-    const params = new URLSearchParams();
-    for (let [key, value] of formData.entries()) {
-        // Skip id_user karena akan ada di URL
-        if (key !== 'id_user') {
-            // Skip password jika kosong
-            if (key === 'password' && value === '') {
-                continue;
-            }
-            params.append(key, value);
-        }
-    }
-    
-    // Kirim data via fetch
+    // Kirim data via fetch (using FormData for file upload)
     fetch('api/user.php?action=update&id=' + id, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: params.toString()
+        body: formData // Send FormData directly (no Content-Type header)
     })
     .then(response => response.json())
     .then(data => {
@@ -759,6 +856,56 @@ function deleteUser(id, nama) {
         
         // Redirect ke API delete
         window.location.href = 'api/user.php?action=delete&id=' + id;
+    }
+}
+
+// Preview foto pada modal add
+function previewAddFoto(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('add_foto_preview');
+    const previewImg = document.getElementById('add_foto_preview_img');
+    
+    if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Ukuran file terlalu besar! Maksimal 5MB');
+            event.target.value = '';
+            preview.style.display = 'none';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+// Preview foto pada modal edit
+function previewEditFoto(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('edit_foto_preview');
+    const previewImg = document.getElementById('edit_foto_preview_img');
+    
+    if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Ukuran file terlalu besar! Maksimal 5MB');
+            event.target.value = '';
+            preview.style.display = 'none';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.style.display = 'none';
     }
 }
 </script>
